@@ -23,7 +23,7 @@
 #include <cmath>
 
 namespace sf2 {
-	namespace _impl {
+	namespace details {
 
 		namespace helpers {
 			inline char parseNumberPreprocessing(io::CharSource& cs, bool& negativ) {
@@ -138,10 +138,8 @@ namespace sf2 {
 			}
 
 		}
-	}
-
-
-	namespace _impl {
+		
+		
 		namespace fundamentals {
 			template<typename M>
 			char _parseMember(io::CharSource& cs, M& val);
@@ -204,20 +202,22 @@ namespace sf2 {
 
 				if(!skipWhitespaces(c,cs))	return 0;
 
-				auto matchOrFail = [&](const char* str) {
+				auto matchOrFail = [&](const char* str) -> char {
 					for (const char *it = str; *it; ++it, c=cs())
 						if (*it != c)
 							return onError(std::string("invalid character for boolean: ")+c, cs) ? c : 0;
+
+					return cs.prev();
 				};
 
 
 				if( c=='f' ) {
-					matchOrFail("false");
+					if( matchOrFail("false")==0 ) return 0;
 					val = false;
 					return c;
 
 				} else if( c=='t' ) {
-					matchOrFail("true");
+					if( matchOrFail("true")==0 ) return 0;
 					val = true;
 					return c;
 
@@ -227,7 +227,7 @@ namespace sf2 {
 						return c;
 
 					} else if(c=='f') {
-						matchOrFail("ff");
+						if( matchOrFail("ff")==0 ) return 0;
 						val = false;
 						return c;
 					}
@@ -296,13 +296,13 @@ namespace sf2 {
 				>::type::value >;
 
 		template<typename T, MemberType memberType>
-		struct MemberParser : public _impl::ParserFunc<T> {
-			static const _impl::ParserFunc<T>& get() {
+		struct MemberParser : public details::ParserFunc<T> {
+			static const details::ParserFunc<T>& get() {
 				static const MemberParser<T, memberType> inst;
 				return inst;
 			}
 
-			constexpr MemberParser()noexcept{};
+			MemberParser()noexcept=default;
 
 			char parse(io::CharSource& cs, T& obj)const {
 				return _parse(cs, obj);
@@ -330,7 +330,7 @@ namespace sf2 {
 				return inst;
 			}
 
-			constexpr MemberParser()noexcept{};
+			MemberParser()noexcept=default;
 
 			char parse(io::CharSource& cs, T& obj)const {
 				return _parse(cs, obj);
@@ -351,13 +351,13 @@ namespace sf2 {
 		 * Overload for strings
 		 */
 		template<>
-		struct MemberParser<std::string, MemberType::COMPLEX> : public _impl::ParserFunc<std::string> {
-			static const _impl::ParserFunc<std::string>& get() {
+		struct MemberParser<std::string, MemberType::COMPLEX> : public details::ParserFunc<std::string> {
+			static const details::ParserFunc<std::string>& get() {
 				static const MemberParser<std::string, MemberType::COMPLEX> inst;
 				return inst;
 			}
 
-			constexpr MemberParser()noexcept{};
+			MemberParser()noexcept=default;
 
 			char parse(io::CharSource& cs, std::string& obj)const {
 				return _parse(cs, obj);
@@ -381,7 +381,7 @@ namespace sf2 {
 				return inst;
 			}
 
-			constexpr MemberParser()noexcept{};
+			MemberParser()noexcept=default;
 
 			char parse(io::CharSource& cs, std::unique_ptr<SubT>& obj)const {
 				return _parse(cs, obj);
@@ -406,7 +406,7 @@ namespace sf2 {
 				return inst;
 			}
 
-			constexpr MemberParser()noexcept{};
+			MemberParser()noexcept=default;
 
 			char parse(io::CharSource& cs, std::shared_ptr<SubT>& obj)const {
 				return _parse(cs, obj);
@@ -432,7 +432,7 @@ namespace sf2 {
 				return inst;
 			}
 
-			constexpr MemberParser()noexcept{};
+			MemberParser()noexcept=default;
 
 			char parse(io::CharSource& cs, std::vector<SubT>& obj)const {
 				return _parse(cs, obj);
@@ -485,7 +485,7 @@ namespace sf2 {
 				return inst;
 			}
 
-			constexpr MemberParser()noexcept{};
+			MemberParser()noexcept=default;
 
 			char parse(io::CharSource& cs, std::map<SubT_key, SubT_value>& obj)const {
 				return _parse(cs, obj);
@@ -546,7 +546,7 @@ namespace sf2 {
 
 		template<typename T, typename M, M T::*ptr>
 		struct MemberParserImpl : public ParserFunc<T> {
-			constexpr MemberParserImpl()noexcept{};
+			MemberParserImpl()noexcept=default;
 
 			static const  ParserFunc<T>& get() {
 				static const MemberParserImpl<T,M,ptr> inst;
@@ -561,7 +561,7 @@ namespace sf2 {
 			}
 		};
 
-	} /* namespace _impl */
+	} /* namespace details */
 } /* namespace sf2 */
 
 #endif /* SF2_HXX */

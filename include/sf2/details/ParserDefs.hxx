@@ -18,7 +18,7 @@
 #define SF2_PARSERDEFS_HXX_
 
 namespace sf2 {
-	namespace _impl {
+	namespace details {
 		template<std::size_t N>
 		WeakStringRef readIdentifier(io::CharSource& source, char (&buffer)[N]) {
 			char c=source();
@@ -62,10 +62,10 @@ namespace sf2 {
 		if( c!='{' )
 			return onError(std::string("object definition has to start with '{', found: ")+c, cs) ? c : 0;
 
-		char memberBuffer[_impl::MAX_MEMBER_NAME_LENGTH];
+		char memberBuffer[details::MAX_MEMBER_NAME_LENGTH];
 
 		while( c!='}' ) {
-			WeakStringRef id = _impl::readIdentifier(cs, memberBuffer);
+			WeakStringRef id = details::readIdentifier(cs, memberBuffer);
 			c=cs.prev();
 
 			if( id.begin==id.end )
@@ -111,7 +111,7 @@ namespace sf2 {
 	// IMPL EnumDef:
 	template<typename T>
 	EnumDef<T>::EnumDef()
-		: _valuesReverse(_impl::buildReverseMap<T>(_sf2_enumDef(static_cast<T>(0)).begin(), _sf2_enumDef(static_cast<T>(0)).end())),
+		: _valuesReverse(details::buildReverseMap<T>(_sf2_enumDef(static_cast<T>(0)).begin(), _sf2_enumDef(static_cast<T>(0)).end())),
 		  _values(_sf2_enumDef(static_cast<T>(0)).begin(), _sf2_enumDef(static_cast<T>(0)).end()) {}
 
 	template<typename T>
@@ -120,9 +120,9 @@ namespace sf2 {
 	}
 	template<typename T>
 	char EnumDef<T>::parse(io::CharSource& cs, T& obj)const {
-		char valBuffer[_impl::MAX_ENUM_VALUE_LENGTH];
+		char valBuffer[details::MAX_ENUM_VALUE_LENGTH];
 
-		WeakStringRef id = _impl::readIdentifier(cs, valBuffer);
+		WeakStringRef id = details::readIdentifier(cs, valBuffer);
 
 		auto v = _values.find(id);
 		if( v==_values.end() )

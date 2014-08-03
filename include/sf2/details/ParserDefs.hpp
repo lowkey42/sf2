@@ -30,9 +30,9 @@
 namespace sf2 {
 
 	template<typename T>
-	class ClassDef : public _impl::ParserFunc<T> {
+	class ClassDef : public details::ParserFunc<T> {
 		public:
-			using value_type = std::pair<WeakStringRef, _impl::ParserFuncRef<T>>;
+			using value_type = std::pair<WeakStringRef, details::ParserFuncRef<T>>;
 			using constructor_type = std::initializer_list<value_type>;
 
 		public:
@@ -47,8 +47,8 @@ namespace sf2 {
 			void write(io::CharSink& sink, const T& obj)const;
 
 		private:
-			const _impl::MemberMap<T> _members;
-			const std::vector<typename _impl::MemberMap<T>::value_type> _memberOrder;
+			const details::MemberMap<T> _members;
+			const std::vector<typename details::MemberMap<T>::value_type> _memberOrder;
 	};
 
 	template<typename T>
@@ -58,7 +58,7 @@ namespace sf2 {
 	// std::initializer_list<std::pair<WeakStringRef, ENUM_TYPE>> enumValues(ENUM_TYPE dummy);
 
 	template<typename T>
-	class EnumDef : public _impl::ParserFunc<T> {
+	class EnumDef : public details::ParserFunc<T> {
 		public:
 			using value_type = std::pair<WeakStringRef, T>;
 			using constructor_type = std::initializer_list<value_type>;
@@ -73,13 +73,13 @@ namespace sf2 {
 			void write(io::CharSink& sink, const T& obj)const;
 
 		private:
-			const _impl::ValueNameReverseMap<T> _valuesReverse;
-			const _impl::ValueNameMap<T> _values;
+			const details::ValueNameReverseMap<T> _valuesReverse;
+			const details::ValueNameMap<T> _values;
 	};
 
 	template<class T, template <typename> class TYPE>
 	struct ParserDef {
-		static  const _impl::ParserFunc<T>& get() {
+		static  const details::ParserFunc<T>& get() {
 			static const TYPE<T> inst;
 			return inst;
 		}

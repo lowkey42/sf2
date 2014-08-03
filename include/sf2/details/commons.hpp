@@ -34,7 +34,7 @@ namespace sf2 {
 #endif
 	}
 
-	namespace _impl {
+	namespace details {
 		constexpr std::size_t MAX_MEMBER_NAME_LENGTH = 64;
 		constexpr std::size_t MAX_ENUM_VALUE_LENGTH = 32;
 

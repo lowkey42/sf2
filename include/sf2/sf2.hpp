@@ -17,16 +17,16 @@
 #ifndef SF2_HPP_
 #define SF2_HPP_
 
-#include "_impl/commons.hpp"
+#include "details/commons.hpp"
 
 #include "io/CharSource.hpp"
 
-#include "_impl/ParserDefs.hpp"
+#include "details/ParserDefs.hpp"
 
 template<typename T, typename M, M T::*ptr>
 struct MemberParserImpl;
 
-#include "_impl/sf2.hxx"
+#include "details/sf2.hxx"
 
 
 /*
@@ -92,7 +92,7 @@ namespace sf2 {
 
 	template<typename T, typename MT, MT T::*m, std::size_t N>
 	constexpr typename ClassDef<T>::value_type member(const char (&name)[N]) {
-		return typename ClassDef<T>::value_type( name, _impl::MemberParserImpl<T, MT,m>::get );
+		return typename ClassDef<T>::value_type( name, details::MemberParserImpl<T, MT,m>::get );
 	}
 
 
