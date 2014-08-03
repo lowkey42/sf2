@@ -302,7 +302,7 @@ namespace sf2 {
 				return inst;
 			}
 
-			MemberParser()noexcept=default;
+			MemberParser()noexcept{};
 
 			char parse(io::CharSource& cs, T& obj)const {
 				return _parse(cs, obj);
@@ -330,7 +330,7 @@ namespace sf2 {
 				return inst;
 			}
 
-			MemberParser()noexcept=default;
+			MemberParser()noexcept{};
 
 			char parse(io::CharSource& cs, T& obj)const {
 				return _parse(cs, obj);
@@ -357,7 +357,7 @@ namespace sf2 {
 				return inst;
 			}
 
-			MemberParser()noexcept=default;
+			MemberParser()noexcept{};
 
 			char parse(io::CharSource& cs, std::string& obj)const {
 				return _parse(cs, obj);
@@ -381,7 +381,7 @@ namespace sf2 {
 				return inst;
 			}
 
-			MemberParser()noexcept=default;
+			MemberParser()noexcept{};
 
 			char parse(io::CharSource& cs, std::unique_ptr<SubT>& obj)const {
 				return _parse(cs, obj);
@@ -406,7 +406,7 @@ namespace sf2 {
 				return inst;
 			}
 
-			MemberParser()noexcept=default;
+			MemberParser()noexcept{};
 
 			char parse(io::CharSource& cs, std::shared_ptr<SubT>& obj)const {
 				return _parse(cs, obj);
@@ -432,7 +432,7 @@ namespace sf2 {
 				return inst;
 			}
 
-			MemberParser()noexcept=default;
+			MemberParser()noexcept{};
 
 			char parse(io::CharSource& cs, std::vector<SubT>& obj)const {
 				return _parse(cs, obj);
@@ -485,7 +485,7 @@ namespace sf2 {
 				return inst;
 			}
 
-			MemberParser()noexcept=default;
+			MemberParser()noexcept{};
 
 			char parse(io::CharSource& cs, std::map<SubT_key, SubT_value>& obj)const {
 				return _parse(cs, obj);
@@ -546,7 +546,7 @@ namespace sf2 {
 
 		template<typename T, typename M, M T::*ptr>
 		struct MemberParserImpl : public ParserFunc<T> {
-			MemberParserImpl()noexcept=default;
+			MemberParserImpl()noexcept{};
 
 			static const  ParserFunc<T>& get() {
 				static const MemberParserImpl<T,M,ptr> inst;
