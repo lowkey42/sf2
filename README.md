@@ -15,10 +15,10 @@ Things it does:
     * map
 * Can write & read from/to strings and files
 * Stateless parsers/writes, all instances are (a) generated in-place or (b) constructed in local buffers and moved afterwards
+* Most escape sequences (Control & Punctuation characters) for chars and strings
 
 
 Things it does not do:
-* Read/ write Unicode or other non-ASCII encodings
 * Conserve comments after one read-write cycle
 * Some usefull STL-classes (e.g. weak_ptr, set, list, hash_map, ...)
 * Automatic indentation/ formating
