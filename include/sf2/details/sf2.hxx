@@ -137,6 +137,45 @@ namespace sf2 {
 					sink(buffer[i]);
 			}
 
+			char parseEscapeSeq(io::CharSource& cs) {
+				const char c = cs();
+				switch(c) {
+					case '\\':
+					case '"':
+					case '\'':
+					case '?':
+						return c;
+
+					case 'n':	return '\n';
+					case 't':	return '\t';
+					case 'a':	return '\a';
+					case 'b':	return '\b';
+					case 'f':	return '\f';
+					case 'r':	return '\r';
+					case 'v':	return '\v';
+
+					default:
+						std::cerr<<"Unknown/ unsupported escape sequence: \\"<<c<<std::endl;
+						return '?';
+				}
+			}
+			void appendChar(io::CharSink& sink, char c) {
+				switch( c ) {
+					case '\\':			sink<<"\\\\";	break;
+					case '"':			sink<<"\\\"";	break;
+					case '\'':			sink<<"\\'";	break;
+					case '\n':			sink<<"\\n";	break;
+					case '\t':			sink<<"\\t";	break;
+					case '\a':			sink<<"\\a";	break;
+					case '\b':			sink<<"\\b";	break;
+					case '\f':			sink<<"\\f";	break;
+					case '\r':			sink<<"\\r";	break;
+					case '\v':			sink<<"\\v";	break;
+
+					default:
+						sink(c);
+				}
+			}
 		}
 		
 		
@@ -155,6 +194,9 @@ namespace sf2 {
 
 				if( c=='"' || c=='\'' ) {
 					val = cs();
+					if( val=='\\' )
+						val = helpers::parseEscapeSeq(cs);
+
 					c=cs();
 					if( c!='"' && c!='\'' )
 						return onError("invalid character (string length!=1)", cs) ? c : 0;
@@ -168,7 +210,7 @@ namespace sf2 {
 			}
 			template<> inline void _writeMember(io::CharSink& sink, const char& val) {
 				sink('"');
-				sink(val);
+				helpers::appendChar(sink, val);
 				sink('"');
 			}
 
@@ -250,8 +292,12 @@ namespace sf2 {
 
 				if( c=='"' || c=='\'' ) { 	//< quoted-string
 					char eosm = c;
-					for(c=cs(); c!=eosm; c=cs())
+					for(c=cs(); c!=eosm; c=cs()) {
+						if( c=='\\' )
+							c = helpers::parseEscapeSeq(cs);
+
 						val.push_back(c);
+					}
 
 					c=cs();
 
@@ -270,7 +316,7 @@ namespace sf2 {
 				sink('"');
 
 				for( const char c : val )
-					sink(c);
+					helpers::appendChar(sink, c);
 
 				sink('"');
 			}

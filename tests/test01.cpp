@@ -36,7 +36,7 @@ sf2_structDef(Player,
 int main() {
 	std::cout<<"Test01:"<<std::endl;
 
-	Player player1 {Position{5,2,1}, Color::GREEN, "The first player"};
+	Player player1 {Position{5,2,1}, Color::GREEN, "The first \nplayer \""};
 
 	auto player1AsString = sf2::writeString(player1);
 

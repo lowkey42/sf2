@@ -103,6 +103,7 @@ namespace sf2 {
 		inline sf2::ClassDef<CLASS>::constructor_type _sf2_structDef(CLASS* dummy) {\
 			typedef CLASS sf2_cType; \
 			static const sf2::ClassDef<CLASS>::constructor_type i {__VA_ARGS__};\
+			if(dummy==dummy){}\
 			return i;\
 		}
 
@@ -110,6 +111,7 @@ namespace sf2 {
 		inline sf2::EnumDef<ENUMT>::constructor_type _sf2_enumDef(ENUMT dummy) {\
 			typedef ENUMT sf2_cType; \
 			static const sf2::EnumDef<ENUMT>::constructor_type i {__VA_ARGS__};\
+			if(dummy==dummy){}\
 			return i;\
 		}
 
