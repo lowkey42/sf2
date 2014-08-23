@@ -137,7 +137,7 @@ namespace sf2 {
 					sink(buffer[i]);
 			}
 
-			char parseEscapeSeq(io::CharSource& cs) {
+			inline char parseEscapeSeq(io::CharSource& cs) {
 				const char c = cs();
 				switch(c) {
 					case '\\':
@@ -159,7 +159,7 @@ namespace sf2 {
 						return '?';
 				}
 			}
-			void appendChar(io::CharSink& sink, char c) {
+			inline void appendChar(io::CharSink& sink, char c) {
 				switch( c ) {
 					case '\\':			sink<<"\\\\";	break;
 					case '"':			sink<<"\\\"";	break;
