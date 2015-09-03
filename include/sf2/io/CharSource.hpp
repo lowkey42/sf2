@@ -19,6 +19,7 @@
 
 #include <cstring>
 #include <string>
+#include <sstream>
 
 namespace sf2 {
 
@@ -64,8 +65,13 @@ namespace sf2 {
 				CharSource(const CharSource& o)=delete;
 				CharSource& operator=(const CharSource& o)=delete;
 
-				inline char operator()() {
-					_prev = readNext();
+				char operator()() {
+					if(_lh) {
+						_prev = _lh;
+						_lh = 0;
+
+					} else
+						_prev = readNext();
 
 					if( _prev=='\n' ) {
 						_line++;
@@ -80,6 +86,14 @@ namespace sf2 {
 				std::size_t line()const {return _line;}
 				std::size_t column()const {return _column;}
 
+				char lookAhead() {
+					if(_lh)
+						return _lh;
+
+					_lh = readNext();
+					return _lh;
+				}
+
 			protected:
 				virtual char readNext()=0;
 
@@ -87,6 +101,7 @@ namespace sf2 {
 				char _prev;
 				std::size_t _line;
 				std::size_t _column;
+				char _lh=0;
 		};
 		class CStringCharSource : public CharSource {
 			public:
@@ -138,6 +153,15 @@ namespace sf2 {
 
 					return *this;
 				}
+			/*	template<typename T>
+				CharSink& operator<<(const T& obj ) {
+					std::stringstream ss;
+					ss<<obj;
+
+					(*this)<<ss.str().c_str();
+
+					return *this;
+				}*/
 		};
 		class StrCharSink : public CharSink {
 			public:
@@ -176,6 +200,38 @@ namespace sf2 {
 				while(!isgraph(c)) 	c=cs();
 
 				if(!skipWhitespaces(c,cs))	return 0;
+			}
+
+			return true;
+		}
+
+		inline bool skipWhitespacesLH( CharSource& cs ) {
+			while( !isgraph(cs.lookAhead()) || cs.lookAhead()=='\n' ) {
+				if(cs()==0) // consume
+					return false;
+			}
+
+			return true;
+		}
+		inline bool skipCommentLH( CharSource& cs ) {
+			if(!skipWhitespacesLH(cs))
+				return 0;
+
+			char c = cs.lookAhead();
+
+			if( c=='#' ) {
+				cs(); // consume
+				c = cs.lookAhead();
+
+				while( c!='\n' ) {
+					if(cs()==0)
+						return false;
+
+					c=cs.lookAhead();
+				}
+
+				if(!skipWhitespacesLH(cs))
+					return 0;
 			}
 
 			return true;

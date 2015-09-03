@@ -27,6 +27,9 @@ namespace sf2 {
 				return WeakStringRef(buffer,buffer);
 			}
 
+			if(c=='"' || c=='\'')
+				c=source();
+
 			bool first=true;
 			for(std::size_t i=0; i<N; ++i ) {
 				if( io::isIdChar(c, first) ) {
@@ -34,8 +37,14 @@ namespace sf2 {
 					c=source();
 					first = false;
 
-				} else
+				} else {
+					if(c=='"' || c=='\'')
+						c=source();
+
+					buffer[i]='\0';
+
 					return WeakStringRef(buffer, buffer+i);
+				}
 			}
 
 			return WeakStringRef(buffer, buffer+N-1);

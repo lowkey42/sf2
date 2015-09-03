@@ -21,6 +21,7 @@
 #include "ParserDefs.hpp"
 #include <iostream>
 #include <cmath>
+#include <cstdio>
 
 namespace sf2 {
 	namespace details {
@@ -137,45 +138,6 @@ namespace sf2 {
 					sink(buffer[i]);
 			}
 
-			inline char parseEscapeSeq(io::CharSource& cs) {
-				const char c = cs();
-				switch(c) {
-					case '\\':
-					case '"':
-					case '\'':
-					case '?':
-						return c;
-
-					case 'n':	return '\n';
-					case 't':	return '\t';
-					case 'a':	return '\a';
-					case 'b':	return '\b';
-					case 'f':	return '\f';
-					case 'r':	return '\r';
-					case 'v':	return '\v';
-
-					default:
-						std::cerr<<"Unknown/ unsupported escape sequence: \\"<<c<<std::endl;
-						return '?';
-				}
-			}
-			inline void appendChar(io::CharSink& sink, char c) {
-				switch( c ) {
-					case '\\':			sink<<"\\\\";	break;
-					case '"':			sink<<"\\\"";	break;
-					case '\'':			sink<<"\\'";	break;
-					case '\n':			sink<<"\\n";	break;
-					case '\t':			sink<<"\\t";	break;
-					case '\a':			sink<<"\\a";	break;
-					case '\b':			sink<<"\\b";	break;
-					case '\f':			sink<<"\\f";	break;
-					case '\r':			sink<<"\\r";	break;
-					case '\v':			sink<<"\\v";	break;
-
-					default:
-						sink(c);
-				}
-			}
 		}
 		
 		
@@ -194,9 +156,6 @@ namespace sf2 {
 
 				if( c=='"' || c=='\'' ) {
 					val = cs();
-					if( val=='\\' )
-						val = helpers::parseEscapeSeq(cs);
-
 					c=cs();
 					if( c!='"' && c!='\'' )
 						return onError("invalid character (string length!=1)", cs) ? c : 0;
@@ -210,7 +169,7 @@ namespace sf2 {
 			}
 			template<> inline void _writeMember(io::CharSink& sink, const char& val) {
 				sink('"');
-				helpers::appendChar(sink, val);
+				sink(val);
 				sink('"');
 			}
 
@@ -292,12 +251,8 @@ namespace sf2 {
 
 				if( c=='"' || c=='\'' ) { 	//< quoted-string
 					char eosm = c;
-					for(c=cs(); c!=eosm; c=cs()) {
-						if( c=='\\' )
-							c = helpers::parseEscapeSeq(cs);
-
+					for(c=cs(); c!=eosm; c=cs())
 						val.push_back(c);
-					}
 
 					c=cs();
 
@@ -316,7 +271,7 @@ namespace sf2 {
 				sink('"');
 
 				for( const char c : val )
-					helpers::appendChar(sink, c);
+					sink(c);
 
 				sink('"');
 			}
@@ -496,6 +451,12 @@ namespace sf2 {
 					return onError(std::string("list definition has to start with '[', found:")+c, cs) ? c : 0;
 
 				while( c!=']' ) {
+					skipCommentLH(cs);
+					if(cs.lookAhead()==']') {
+						cs();
+						break;
+					}
+
 					SubT elem;
 					if( !(c=MemberParserChooser<SubT>::_parse(cs, elem)) )
 						return 0;
@@ -571,6 +532,71 @@ namespace sf2 {
 				return cs();
 			}
 			static void _write(io::CharSink& sink, const std::map<SubT_key, SubT_value>& obj) {
+				sink<<"{\n";
+
+				bool first = true;
+				for( const auto& i : obj ) {
+					if( first )
+						first = false;
+					else
+						sink(',');
+
+					MemberParserChooser<SubT_key>::_write(sink, i.first);
+					sink(':');
+					MemberParserChooser<SubT_value>::_write(sink, i.second);
+				}
+
+				sink<<"\n}";
+			}
+		};
+
+		template<class SubT_key, class SubT_value>
+		struct MemberParser<std::unordered_map<SubT_key, SubT_value>, MemberType::COMPLEX> : public ParserFunc<std::unordered_map<SubT_key, SubT_value>> {
+			static const  ParserFunc<std::unordered_map<SubT_key, SubT_value>>& get() {
+				static const MemberParser<std::unordered_map<SubT_key, SubT_value>, MemberType::COMPLEX> inst;
+				return inst;
+			}
+
+			MemberParser()noexcept{};
+
+			char parse(io::CharSource& cs, std::unordered_map<SubT_key, SubT_value>& obj)const {
+				return _parse(cs, obj);
+			}
+			void write(io::CharSink& sink, const std::unordered_map<SubT_key, SubT_value>& obj)const {
+				_write(sink, obj);
+			}
+
+			static char _parse(io::CharSource& cs, std::unordered_map<SubT_key, SubT_value>& obj) {
+				char c=cs();
+
+				if(!skipComment(c,cs))	return 0;
+
+				if( c!='{' )
+					return onError(std::string("map definition has to start with '{', found: ")+c, cs) ? c : 0;
+
+				while( c!='}' ) {
+					SubT_key key;
+
+					if( !(c=MemberParserChooser<SubT_key>::_parse(cs, key)) )
+						return 0;
+
+					if(!skipComment(c,cs))	return 0;
+
+					if( c!=':' )
+						return onError(std::string("missing ':' in map, found: ")+c, cs) ? c : 0;
+
+					SubT_value val;
+					if( !(c=MemberParserChooser<SubT_value>::_parse(cs, val)) )
+						return 0;
+
+					obj.insert(std::make_pair(std::move(key), std::move(val)));
+
+					if(!skipComment(c,cs))	return 0;
+				}
+
+				return cs();
+			}
+			static void _write(io::CharSink& sink, const std::unordered_map<SubT_key, SubT_value>& obj) {
 				sink<<"{\n";
 
 				bool first = true;
