@@ -1,8 +1,14 @@
 
 #include <iostream>
 #include <cassert>
+#include <sstream>
 
-#include <sf2/sf2.hpp>
+//#include <sf2/sf2.hpp>
+#include <sf2/reflection.hpp>
+#include <sf2/serializer.hpp>
+#include <sf2/formats/json_writer.hpp>
+#include <sf2/formats/json_reader.hpp>
+
 
 enum class Color {
 	RED, GREEN, BLUE
@@ -25,16 +31,31 @@ sf2_structDef(Player, position, color, name)
 int main() {
 	std::cout<<"Test01:"<<std::endl;
 
-	//Player player1 {Position{5,2,1}, Color::GREEN, "The first player is \"ÄÖÜ ß öäü ẑ\"⸮"};
-	Player player1 {Position{5,2,1}, Color::GREEN, "The first player is"};
+	Player player1 {Position{5,2,1}, Color::GREEN, "The first player is \"/%&ÄÖ\""};
 
-	auto player1AsString = sf2::writeString(player1);
+	sf2::serialize(sf2::format::Json_writer{std::cout}, player1);
 
-	std::cout<<"player1:  "<<player1AsString<<std::endl;
+	std::string str = R"({
+    "position": {
+        "x": 5,
+        "y": 2,
+        "z": 1
+    },
+    "color": "GREEN",
+    "name": "The first player is \"/%&ÄÖ\""
+}
+)";
 
-	Player parsedPlayer = sf2::parseString<Player>(player1AsString);
+	auto istream = std::istringstream{str};
 
-	std::cout<<"parsedPlayer:  "<<sf2::writeString(parsedPlayer)<<std::endl;
+	Player player2;
+	sf2::deserialize(sf2::format::Json_reader{istream}, player2);
 
-	assert(sf2::writeString(parsedPlayer)==player1AsString);
+	std::stringstream out;
+
+	sf2::serialize(sf2::format::Json_writer{out}, player2);
+
+	assert(out.str()==str && "generated string doesn't match expected result");
+
+	std::cout<<"success"<<std::endl;
 }

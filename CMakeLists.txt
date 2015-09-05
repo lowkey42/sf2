@@ -6,7 +6,6 @@ include_directories(AFTER include)
 
 install(DIRECTORY include/sf2/ DESTINATION include/sf2 FILES_MATCHING PATTERN "*.h*")
 
-# add headers to IDEs
 FILE(GLOB_RECURSE INC  "include/*.h*")
 
 add_executable("test01.bin"
@@ -14,4 +13,9 @@ add_executable("test01.bin"
     ${INC}
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wextra -Wall")
+add_executable("test_complex.bin"
+    "tests/test_complex.cpp"
+    ${INC}
+)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wextra -Wall")
