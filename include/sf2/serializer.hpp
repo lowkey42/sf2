@@ -123,6 +123,16 @@ namespace sf2 {
 		};
 	}
 
+	template<typename T>
+	auto vmember(const char* name, T& v) {
+		return std::pair<const char*, T&>(name, v);
+	}
+	template<typename T>
+	auto vmember(const std::string& name, T& v) {
+		return std::pair<const std::string&, T&>(name, v);
+	}
+
+
 	template<typename Writer>
 	struct Serializer {
 		Serializer(Writer&& w) : writer(std::move(w)) {}
@@ -152,8 +162,8 @@ namespace sf2 {
 		private:
 			Writer writer;
 
-			template<class T>
-			int write_member_pair(std::pair<const char*, const T&> inst) {
+			template<class K, class T>
+			int write_member_pair(std::pair<K, T&> inst) {
 				writer.write(inst.first);
 				write_value(inst.second);
 				return 0;
@@ -305,8 +315,8 @@ namespace sf2 {
 			Reader reader;
 			std::string buffer;
 
-			template<class T>
-			int read_member_pair(std::string& n, std::pair<const char*, T&> inst) {
+			template<class K, class T>
+			int read_member_pair(std::string& n, std::pair<K, T&> inst) {
 				if(n==inst.first)
 					read_value(inst.second);
 				return 0;

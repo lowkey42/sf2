@@ -30,13 +30,13 @@ sf2_structDef(Player, position, color, name)
 struct Data {
 	void load(sf2::Deserializer<sf2::format::Json_reader>& s) {
 		s.read_virtual(
-		            std::pair<const char*, float&>("a", a),
-		            std::pair<const char*, bool&>("b", b) );
+		            sf2::vmember("a", a),
+		            sf2::vmember("b", b) );
 	}
 	void save(sf2::Serializer<sf2::format::Json_writer>& s)const {
 		s.write_virtual(
-		            std::pair<const char*, const float&>("a", a),
-		            std::pair<const char*, const bool&>("b", b) );
+		            sf2::vmember("a", a),
+		            sf2::vmember("b", b) );
 	}
 
 	float a;
@@ -63,9 +63,9 @@ int main() {
 	std::vector<Player> players {player};
 
 	sf2::serialize_virtual(sf2::format::Json_writer{std::cout},
-			std::pair<const char*, const std::string&>("id", id),
-			std::pair<const char*, const Data&>("data", data),
-			std::pair<const char*, const std::vector<Player>&>("players", players));
+			sf2::vmember("id", id),
+			sf2::vmember("data", data),
+			sf2::vmember(std::string("players"), players));
 
 
 	std::string str = R"({
@@ -91,17 +91,17 @@ int main() {
 	auto istream = std::istringstream{str};
 
 	sf2::deserialize_virtual(sf2::format::Json_reader{istream},
-			std::pair<const char*, std::string&>("id", id),
-			std::pair<const char*, Data&>("data", data),
-			std::pair<const char*, std::vector<Player>&>("players", players));
+			sf2::vmember("id", id),
+			sf2::vmember("data", data),
+			sf2::vmember("players", players));
 
 
 	std::stringstream out;
 
 	sf2::serialize_virtual(sf2::format::Json_writer{out},
-			std::pair<const char*, const std::string&>("id", id),
-			std::pair<const char*, const Data&>("data", data),
-			std::pair<const char*, const std::vector<Player>&>("players", players));
+			sf2::vmember("id", id),
+			sf2::vmember("data", data),
+			sf2::vmember("players", players));
 
 	assert(out.str()==str && "generated string doesn't match expected result");
 

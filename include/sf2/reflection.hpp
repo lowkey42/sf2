@@ -1,5 +1,5 @@
 /***********************************************************\
- * sf2.hpp - Defines the public interface of SF2           *
+ * Macros to auto-ish generate struct/enum descriptions    *
  *     ___________ _____                                   *
  *    /  ___|  ___/ __  \                                  *
  *    \ `--.| |_  `' / /'                                  *

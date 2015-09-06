@@ -1,5 +1,5 @@
 /***********************************************************\
- * JSON reader and writer                                  *
+ * JSON reader                                             *
  *     ___________ _____                                   *
  *    /  ___|  ___/ __  \                                  *
  *    \ `--.| |_  `' / /'                                  *
@@ -22,13 +22,16 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <functional>
 
 namespace sf2 {
 namespace format {
 
+	using Error_handler = std::function<void (const std::string& msg, uint32_t row, uint32_t column)>;
+
 	class Json_reader {
 		public:
-			Json_reader(std::istream& stream);
+			Json_reader(std::istream& stream, Error_handler ehandler=Error_handler{});
 
 			// returns true if the next key is ready to be read
 			bool in_document();
@@ -75,6 +78,7 @@ namespace format {
 			};
 
 			std::istream& _stream;
+			Error_handler _error_handler;
 			std::vector<State> _state;
 			uint32_t _column = 1;
 			uint32_t _row = 1;
@@ -84,11 +88,15 @@ namespace format {
 			uint32_t _saved_row = 1;
 	};
 
-	Json_reader::Json_reader(std::istream& stream) : _stream(stream) {
+	Json_reader::Json_reader(std::istream& stream, Error_handler ehandler)
+	    : _stream(stream), _error_handler(ehandler) {
 	}
 
 	void Json_reader::_on_error(const std::string& e) {
-		std::cerr<<"Error parsing JSON at "<<_row<<":"<<_column<<" : "<<e<<std::endl;
+		if(_error_handler)
+			_error_handler(e, _row, _column);
+		else
+			std::cerr<<"Error parsing JSON at "<<_row<<":"<<_column<<" : "<<e<<std::endl;
 	}
 	char Json_reader::_get() {
 		auto c = _stream.get();
@@ -96,6 +104,14 @@ namespace format {
 		if(c=='\n') {
 			_column=1;
 			_row++;
+		}
+		if(c==EOF) {
+			std::string msg = "Unexpected end of file";
+			for(auto s : _state) {
+				msg+= ". Unclosed ";
+				msg+= s==State::array ? "array" : "object";
+			}
+			_on_error(msg);
 		}
 		return c;
 	}
@@ -120,21 +136,17 @@ namespace format {
 	}
 
 	char Json_reader::_next(bool in_string) {
-		// TODO: check for end-of-file
-
 		auto c = _get();
 		if(c=='/' && !in_string && _stream.peek()=='*') { // comment
 			_get();
 
 			while(c=='*' && (c=_get())=='/') {
-				// TODO: check for end-of-file
 			}
 		}
 
 		if(!in_string) {
 			while(!std::isgraph(c)) {
 				c = _get();
-				// TODO: check for end-of-file
 			}
 		}
 

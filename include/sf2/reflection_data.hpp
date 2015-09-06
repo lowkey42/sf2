@@ -59,7 +59,7 @@ namespace sf2 {
 
 
 	template<typename ST, typename MT>
-    using Member_ptr = MT ST::*;
+	using Member_ptr = MT ST::*;
 
 	template<typename T, typename MemberT>
 	using Member_data = std::tuple<MemberT T::*, const char*>;
