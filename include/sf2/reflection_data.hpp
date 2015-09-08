@@ -23,6 +23,8 @@
 
 namespace sf2 {
 
+	// TODO: replace std::string with StringRef (no allocation required)
+
 	template<typename T>
 	class Enum_info {
 		public:

@@ -3,11 +3,7 @@
 #include <cassert>
 #include <sstream>
 
-//#include <sf2/sf2.hpp>
-#include <sf2/reflection.hpp>
-#include <sf2/serializer.hpp>
-#include <sf2/formats/json_writer.hpp>
-#include <sf2/formats/json_reader.hpp>
+#include <sf2/sf2.hpp>
 
 
 enum class Color {
@@ -33,7 +29,7 @@ int main() {
 
 	Player player1 {Position{5,2,1}, Color::GREEN, "The first player is \"/%&ÄÖ\""};
 
-	sf2::serialize(sf2::format::Json_writer{std::cout}, player1);
+	sf2::serialize_json(std::cout, player1);
 
 	std::string str = R"({
     "position": {
@@ -49,11 +45,11 @@ int main() {
 	auto istream = std::istringstream{str};
 
 	Player player2;
-	sf2::deserialize(sf2::format::Json_reader{istream}, player2);
+	sf2::deserialize_json(istream, player2);
 
 	std::stringstream out;
 
-	sf2::serialize(sf2::format::Json_writer{out}, player2);
+	sf2::serialize_json(out, player2);
 
 	assert(out.str()==str && "generated string doesn't match expected result");
 

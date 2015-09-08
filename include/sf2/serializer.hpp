@@ -285,7 +285,9 @@ namespace sf2 {
 
 	template<typename Reader>
 	struct Deserializer {
-		Deserializer(Reader&& r) : reader(std::move(r)) {}
+		Deserializer(Reader&& r) : reader(std::move(r)) {
+			buffer.reserve(64);
+		}
 
 		template<class T>
 		std::enable_if_t<is_annotated_struct<T>::value>
@@ -295,7 +297,7 @@ namespace sf2 {
 				reader.read(buffer);
 
 				get_struct_info<T>().for_each([&](const char* n, auto mptr) {
-					if(buffer==n)
+					if(buffer==n) // TODO: benchmark with unordered_map
 						read_value(inst.*mptr);
 				});
 			}
@@ -317,7 +319,7 @@ namespace sf2 {
 
 			template<class K, class T>
 			int read_member_pair(std::string& n, std::pair<K, T&> inst) {
-				if(n==inst.first)
+				if(n==inst.first) // TODO: benchmark with unordered_map
 					read_value(inst.second);
 				return 0;
 			}
@@ -352,7 +354,7 @@ namespace sf2 {
 					reader.read(buffer);
 
 					get_struct_info<T>().for_each([&](const char* n, auto mptr) {
-						if(buffer==n)
+						if(buffer==n) // TODO: benchmark with unordered_map
 							read_value(inst.*mptr);
 					});
 				}

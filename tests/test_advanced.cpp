@@ -21,9 +21,16 @@ struct Position {
 sf2_structDef(Position, x, y, z)
 
 struct Player {
-	Position position;
-	Color color;
-	std::string name;
+	public:
+		friend sf2_accesor(Player);
+		Player() = default;
+		Player(Position position, Color color, std::string name)
+		    : position(position), color(color), name(name){}
+
+	private:
+		Position position;
+		Color color;
+		std::string name;
 };
 sf2_structDef(Player, position, color, name)
 
@@ -43,11 +50,6 @@ struct Data {
 	bool b;
 };
 
-/* Virtual struct
- * - id: std::string
- * - data: Data
- * - players: std::vector<Player>
- */
 
 int main() {
 	std::cout<<"Test_complex:"<<std::endl;

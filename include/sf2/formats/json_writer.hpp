@@ -104,11 +104,12 @@ namespace format {
 				first_obj_key, obj_key, obj_value, first_array, array
 			};
 
-			std::ostream& _stream;
+			std::ostream& _stream; // TODO: benchmark with non-<< based output
 			std::vector<State> _state;
 	};
 
 	Json_writer::Json_writer(std::ostream& stream) : _stream(stream) {
+		_state.reserve(16);
 	}
 
 	void Json_writer::begin_document() {

@@ -90,6 +90,7 @@ namespace format {
 
 	Json_reader::Json_reader(std::istream& stream, Error_handler ehandler)
 	    : _stream(stream), _error_handler(ehandler) {
+		_state.reserve(16);
 	}
 
 	void Json_reader::_on_error(const std::string& e) {
