@@ -70,6 +70,12 @@ struct Abstract_data {
 	virtual void load(sf2::JsonDeserializer& s) = 0;
 	virtual void save(sf2::JsonSerializer& s)const = 0;
 };
+void load(sf2::JsonDeserializer& s, Abstract_data& d) {
+	d.load(s);
+}
+void save(sf2::JsonSerializer& s, const Abstract_data& d) {
+	d.save(s);
+}
 
 struct My_data : Abstract_data {
 	void load(sf2::JsonDeserializer& s) override {
