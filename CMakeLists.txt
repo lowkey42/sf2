@@ -13,6 +13,12 @@ if(SF2_BUILD_TESTS)
 
 	MESSAGE("Building tests for sf2")
 
+	if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+		message(STATUS "Setting build type to 'Debug' as none was specified.")
+		set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+	endif()
+
+
 	FILE(GLOB_RECURSE INC  "include/*.h*")
 
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wextra -Wall")

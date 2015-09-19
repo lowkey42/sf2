@@ -17,6 +17,7 @@
 #pragma once
 
 #include <memory>
+#include <iostream>
 
 #include "reflection_data.hpp"
 
@@ -27,6 +28,8 @@ namespace sf2 {
 
 	template<typename Writer>
 	struct Deserializer;
+
+	using Error_handler = std::function<void (const std::string& msg, uint32_t row, uint32_t column)>;
 
 
 	namespace details {
@@ -124,12 +127,8 @@ namespace sf2 {
 	}
 
 	template<typename T>
-	auto vmember(const char* name, T& v) {
-		return std::pair<const char*, T&>(name, v);
-	}
-	template<typename T>
-	auto vmember(const std::string& name, T& v) {
-		return std::pair<const std::string&, T&>(name, v);
+	auto vmember(String_literal name, T& v) {
+		return std::pair<String_literal, T&>(name, v);
 	}
 
 
@@ -142,7 +141,7 @@ namespace sf2 {
 		  write(const T& inst) {
 			writer.begin_document();
 
-			get_struct_info<T>().for_each([&](const char* n, auto mptr) {
+			get_struct_info<T>().for_each([&](auto n, auto mptr) {
 				write_member(n, inst.*mptr);
 			});
 
@@ -168,10 +167,16 @@ namespace sf2 {
 				write_value(inst.second);
 				return 0;
 			}
+			template<class T>
+			int write_member_pair(std::pair<String_literal, T&> inst) {
+				writer.write(inst.first.data, inst.first.len);
+				write_value(inst.second);
+				return 0;
+			}
 
 			template<class T>
-			void write_member(const char* name, const T& inst) {
-				writer.write(name);
+			void write_member(String_literal name, const T& inst) {
+				writer.write(name.data, name.len);
 				write_value(inst);
 			}
 
@@ -204,7 +209,7 @@ namespace sf2 {
 			  write_value(const T& inst) {
 				writer.begin_obj();
 
-				get_struct_info<T>().for_each([&](const char* n, auto mptr) {
+				get_struct_info<T>().for_each([&](auto n, auto mptr) {
 					write_member(n, inst.*mptr);
 				});
 
@@ -215,7 +220,8 @@ namespace sf2 {
 			template<class T>
 			std::enable_if_t<is_annotated_enum<T>::value>
 			  write_value(const T& inst) {
-				writer.write(get_enum_info<T>().name_of(inst));
+				auto name = get_enum_info<T>().name_of(inst);
+				writer.write(name.data, name.len);
 			}
 
 			// map
@@ -285,7 +291,8 @@ namespace sf2 {
 
 	template<typename Reader>
 	struct Deserializer {
-		Deserializer(Reader&& r) : reader(std::move(r)) {
+		Deserializer(Reader&& r, Error_handler error_handler=Error_handler())
+		    : reader(std::move(r)), error_handler(error_handler) {
 			buffer.reserve(64);
 		}
 
@@ -296,10 +303,19 @@ namespace sf2 {
 			while(reader.in_document()) {
 				reader.read(buffer);
 
-				get_struct_info<T>().for_each([&](const char* n, auto mptr) {
-					if(buffer==n) // TODO: benchmark with unordered_map
+				auto match = false;
+				auto key = String_literal{buffer};
+
+				get_struct_info<T>().for_each([&](String_literal n, auto mptr) {
+					if(!match && n==key) {
 						read_value(inst.*mptr);
+						match = true;
+					}
 				});
+
+				if(!match) {
+					on_error("Unexpected key "+buffer);
+				}
 			}
 		}
 
@@ -308,19 +324,36 @@ namespace sf2 {
 			while(reader.in_document()) {
 				reader.read(buffer);
 
-				auto i = {read_member_pair(buffer, m)...};
+				bool match = false;
+				auto key = String_literal{buffer};
+
+				auto i = {read_member_pair(match, key, m)...};
 				(void)i;
+
+				if(!match) {
+					on_error("Unexpected key "+buffer);
+				}
 			}
 		}
 
 		private:
 			Reader reader;
 			std::string buffer;
+			Error_handler error_handler;
+
+			void on_error(const std::string& e) {
+				if(error_handler)
+					error_handler(e, reader.row(), reader.column());
+				else
+					std::cerr<<"Error parsing JSON at "<<reader.row()<<":"<<reader.column()<<" : "<<e<<std::endl;
+			}
 
 			template<class K, class T>
-			int read_member_pair(std::string& n, std::pair<K, T&> inst) {
-				if(n==inst.first) // TODO: benchmark with unordered_map
+			int read_member_pair(bool& match, String_literal n, std::pair<K, T&> inst) {
+				if(!match && inst.first==n) {
 					read_value(inst.second);
+					match = true;
+				}
 				return 0;
 			}
 
@@ -353,10 +386,19 @@ namespace sf2 {
 				while(reader.in_obj()) {
 					reader.read(buffer);
 
-					get_struct_info<T>().for_each([&](const char* n, auto mptr) {
-						if(buffer==n) // TODO: benchmark with unordered_map
+					bool match = false;
+					auto key = String_literal{buffer};
+
+					get_struct_info<T>().for_each([&](auto n, auto mptr) {
+						if(!match && n==key) {
 							read_value(inst.*mptr);
+							match = true;
+						}
 					});
+
+					if(!match) {
+						on_error("Unexpected key "+buffer);
+					}
 				}
 			}
 

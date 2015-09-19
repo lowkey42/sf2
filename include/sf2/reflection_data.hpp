@@ -21,17 +21,76 @@
 #include <unordered_map>
 #include <array>
 
+#include <iostream>
+
 namespace sf2 {
 
-	// TODO: replace std::string with StringRef (no allocation required)
+	namespace details {
+		constexpr auto calc_hash(const char* data, std::size_t len)noexcept -> std::size_t {
+			std::size_t h = 0;
+			for(std::size_t i=0; i<len; ++i)
+				h = h*101 + data[i];
 
+			return h;
+		}
+	}
+
+	struct String_literal {
+		const char* data;
+		std::size_t len;
+		std::size_t hash;
+
+		template<std::size_t N>
+		constexpr String_literal(const char (&data)[N]) : data(data), len(N-1), hash(details::calc_hash(data, len)) {
+
+		}
+		String_literal(const std::string& str) : data(str.data()), len(str.size()), hash(details::calc_hash(data,len)) {
+		}
+
+		bool operator==(const String_literal& rhs)const {
+			if(len!=rhs.len) {
+				return false;
+			}
+			if(hash!=rhs.hash)
+				return false;
+
+			for(std::size_t i=0; i<len; ++i) {
+				if(data[i]!=rhs.data[i])
+					return false;
+			}
+
+			return true;
+		}
+		bool operator==(const char* rhs)const {
+			for(std::size_t i=0; i<len; ++i) {
+				if(rhs[i]==0 || data[i]!=rhs[i])
+					return false;
+			}
+
+			if(rhs[len]!=0)
+				return false;
+
+			return true;
+		}
+	};
+}
+namespace std {
+	template<>
+	struct hash<sf2::String_literal> {
+		size_t operator()(const sf2::String_literal& s) const {
+			return s.hash;
+		}
+	};
+}
+
+namespace sf2 {
 	template<typename T>
 	class Enum_info {
 		public:
-			using Value_type = std::pair<T, const char*>;
+			using Value_type = std::pair<T, String_literal>;
 
 		public:
-			Enum_info(const char* name, std::initializer_list<Value_type> v)
+			Enum_info(String_literal name, std::initializer_list<Value_type> v)
 			    : _name(name) {
 				for(auto& e : v) {
 					_names.emplace(e.first, e.second);
@@ -41,22 +100,33 @@ namespace sf2 {
 
 			auto name()const noexcept {return _name;}
 
-			auto value_of(const std::string& name)const noexcept -> T {
+			auto value_of(const String_literal& name)const noexcept -> T {
 				auto i = _values.find(name);
 				assert(i!=_values.end());
 				return i->second;
 			}
+			auto value_of(const std::string& name)const noexcept -> T {
+				auto i = _values.find(String_literal{name});
+				assert(i!=_values.end());
+				return i->second;
+			}
 
-			auto name_of (T value)const noexcept -> std::string {
+			auto name_of (T value)const noexcept -> String_literal {
 				auto i = _names.find(value);
 				assert(i!=_names.end());
 				return i->second;
 			}
 
 		private:
-			const char* _name;
-			std::map<T, std::string> _names;
-			std::unordered_map<std::string, T> _values;
+			struct Enum_hash {
+				auto operator()(T v)const {
+					return static_cast<std::size_t>(v);
+				}
+			};
+
+			String_literal _name;
+			std::unordered_map<T, String_literal, Enum_hash> _names;
+			std::unordered_map<String_literal, T> _values;
 	};
 
 
@@ -64,14 +134,14 @@ namespace sf2 {
 	using Member_ptr = MT ST::*;
 
 	template<typename T, typename MemberT>
-	using Member_data = std::tuple<MemberT T::*, const char*>;
+	using Member_data = std::tuple<MemberT T::*, String_literal>;
 
 	template<typename T, typename... MemberT>
 	class Struct_info {
 		public:
 			static constexpr std::size_t member_count = sizeof...(MemberT);
 
-			constexpr Struct_info(const char* name, Member_data<T,MemberT>... members) : _name(name), _member_names{{std::get<1>(members)...}}, _members(std::get<0>(members)...) {
+			constexpr Struct_info(String_literal name, Member_data<T,MemberT>... members) : _name(name), _member_names{{std::get<1>(members)...}}, _members(std::get<0>(members)...) {
 			}
 
 			constexpr auto name()const {return _name;}
@@ -92,8 +162,8 @@ namespace sf2 {
 			}
 
 		private:
-			const char* _name;
-			std::array<const char*, member_count> _member_names;
+			String_literal _name;
+			std::array<String_literal, member_count> _member_names;
 			std::tuple<Member_ptr<T,MemberT>...> _members;
 	};
 

@@ -45,7 +45,7 @@ namespace sf2 {
 	}
 	template<typename T>
 	inline void deserialize_json(std::istream& stream, format::Error_handler on_error, T& v) {
-		JsonDeserializer{format::Json_reader{stream, on_error}}.read(v);
+		JsonDeserializer{format::Json_reader{stream, on_error}, on_error}.read(v);
 	}
 	template<typename... Members>
 	inline void deserialize_json_virtual(std::istream& stream, Members&&... m) {
@@ -53,7 +53,7 @@ namespace sf2 {
 	}
 	template<typename... Members>
 	inline void deserialize_json_virtual(std::istream& stream, format::Error_handler on_error, Members&&... m) {
-		JsonDeserializer{format::Json_reader{stream, on_error}}.read_virtual(std::forward<Members>(m)...);
+		JsonDeserializer{format::Json_reader{stream, on_error}, on_error}.read_virtual(std::forward<Members>(m)...);
 	}
 
 }

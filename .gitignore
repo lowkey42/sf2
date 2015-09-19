@@ -21,3 +21,5 @@
 *.app
 
 /build
+
+CMakeLists.txt.user

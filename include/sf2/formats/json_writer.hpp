@@ -36,6 +36,7 @@ namespace format {
 			void write_nullptr();
 
 			void write(const char*);
+			void write(const char*, std::size_t len);
 			void write(const std::string&);
 			void write(bool);
 			void write(float);
@@ -51,7 +52,7 @@ namespace format {
 
 		private:
 			void newline() {
-				_stream<<std::endl;
+				_stream.put('\n');
 				for(std::size_t i=0; i<_state.size(); ++i)
 					_stream<<"    ";
 			}
@@ -104,7 +105,7 @@ namespace format {
 				first_obj_key, obj_key, obj_value, first_array, array
 			};
 
-			std::ostream& _stream; // TODO: benchmark with non-<< based output
+			std::ostream& _stream;
 			std::vector<State> _state;
 	};
 
@@ -173,6 +174,17 @@ namespace format {
 			_stream.put(c);
 			c = v[++i];
 		}
+
+		_stream.put('"');
+
+		_post_write();
+	}
+	void Json_writer::write(const char* v, std::size_t len) {
+		_pre_write();
+
+		_stream.put('"');
+
+		_stream.write(v, len);
 
 		_stream.put('"');
 

@@ -53,6 +53,9 @@ namespace format {
 			void read(uint64_t&);
 			void read(int64_t&);
 
+			auto row()const noexcept {return _row;}
+			auto column()const noexcept {return _column;}
+
 		private:
 			char _get();
 			void _unget();
@@ -308,7 +311,7 @@ namespace format {
 	bool Json_reader::read_nullptr() { // look-ahead if false
 		_mark();
 
-		if(_next()=='n' && _next()=='u' && _next()=='l' && _next()=='l') {
+		if(_next()=='n' && _get()=='u' && _get()=='l' && _get()=='l') {
 			_post_read();
 			return true;
 		}
@@ -323,16 +326,16 @@ namespace format {
 		if(c!='\"')
 			_on_error("Missing '\"' at the start of string");
 
-		c = _next(true);
+		c = _get();
 
 		val.clear();
 		while(c!='"') {
 			if(c=='\\')
-				val+=_next(true);
+				val+=_get();
 			else
 				val+=c;
 
-			c = _next(true);
+			c = _get();
 		}
 
 		_post_read();
@@ -341,14 +344,14 @@ namespace format {
 	void Json_reader::read(bool& val) {
 		char chars[] {
 		    _next(),
-		    _next(),
-		    _next(),
-		    _next()
+		    _get(),
+		    _get(),
+		    _get()
 		};
 
 		if(chars[0]=='t' && chars[1]=='r' && chars[2]=='u' && chars[3]=='e')
 			val = true;
-		else if(chars[0]=='f' && chars[1]=='a' && chars[2]=='l' && chars[3]=='s' && _next()=='e')
+		else if(chars[0]=='f' && chars[1]=='a' && chars[2]=='l' && chars[3]=='s' && _get()=='e')
 			val = false;
 		else
 			_on_error(std::string("Unknown boolean constant '")+chars+"'");
