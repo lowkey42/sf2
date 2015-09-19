@@ -369,6 +369,7 @@ namespace sf2 {
 				return 0;
 			}
 
+		public:
 			template<class T>
 			void read_value(std::unique_ptr<T>& inst) {
 				if(reader.read_nullptr())
