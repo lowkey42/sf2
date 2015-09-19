@@ -19,11 +19,11 @@ The serializer uses the provided information to load or save an instance of an a
 * any float or integer type
 * any range (adl begin and end functions) T that has
 * T::key_type, T::mapped_type and the member functions: clear() and emplace(T::key_type, T::mapped_type).
-\\Interpreted as a map (JSON object)
+Interpreted as a map (JSON object)
 * T::key_type, T::value_type and the member functions: clear() and emplace(T::value_type).
-\\Interpreted as a set (JSON array)
+Interpreted as a set (JSON array)
 * T::value_type and member functions: clear() and emplace_back(T::value_type).
-\\Interpreted as a list (JSON array)
+Interpreted as a list (JSON array)
 
 ## Requirements
 A C++14 compliant compiler (constexpr, variadic templates, SFINAE, ...).
