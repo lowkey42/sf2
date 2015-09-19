@@ -41,8 +41,7 @@ namespace sf2 {
 				typedef char one;
 				typedef long two;
 
-				template<typename U, void (U::*)(Serializer<Writer>&)const> struct SaveMethod {};
-				template <typename C> static one test(SaveMethod<C, &C::save>*);
+				template <typename C> static one test(decltype(save(std::declval<Serializer<Writer>&>(), std::declval<const C&>()))*);
 				template <typename C> static two test(...);
 
 
@@ -55,8 +54,7 @@ namespace sf2 {
 				typedef char one;
 				typedef long two;
 
-				template<typename U, void (U::*)(Deserializer<Reader>&)> struct SaveMethod {};
-				template <typename C> static one test(SaveMethod<C, &C::load>*);
+				template <typename C> static one test(decltype(load(std::declval<Deserializer<Reader>&>(), std::declval<C&>()))*);
 				template <typename C> static two test(...);
 
 
@@ -258,7 +256,7 @@ namespace sf2 {
 			std::enable_if_t<not is_annotated<T>::value
 			                 && details::has_save<Writer,T>::value>
 			  write_value(const T& inst) {
-				inst.save(*this);
+				save(*this, inst);
 			}
 
 			// other
@@ -458,12 +456,12 @@ namespace sf2 {
 				}
 			}
 
-			// manual save-function
+			// manual load-function
 			template<class T>
 			std::enable_if_t<not is_annotated<T>::value
 			                 && details::has_load<Reader,T>::value>
 			  read_value(T& inst) {
-				inst.load(*this);
+				load(*this, inst);
 			}
 
 			// other

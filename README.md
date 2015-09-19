@@ -11,7 +11,7 @@ The serializer uses the provided information to load or save an instance of an a
 * any enum class with a sf2_enumDef definition in the same namespace
 * any default constructible class or struct with a sf2_structDef definition in the same namespace and all serialized members are public
 * any default constructible class or struct with a sf2_structDef definition in the same namespace and a friend declaration for sf2_accesor(ClassName)
-* any default constructible type with a load(sf2::JsonDeserializer&) method is desrializable and any type with a save(sf2::JsonSerializer&)const method is serializable
+* any default constructible type with an adl function load(sf2::JsonDeserializer&,T&) is desrializable and any type with an adl function save(sf2::JsonSerializer&, const T&) is serializable
 * std::shared_ptr
 * std::unique_ptr
 * std::string

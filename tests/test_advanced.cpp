@@ -35,20 +35,19 @@ struct Player {
 sf2_structDef(Player, position, color, name)
 
 struct Data {
-	void load(sf2::Deserializer<sf2::format::Json_reader>& s) {
-		s.read_virtual(
-		            sf2::vmember("a", a),
-		            sf2::vmember("b", b) );
-	}
-	void save(sf2::Serializer<sf2::format::Json_writer>& s)const {
-		s.write_virtual(
-		            sf2::vmember("a", a),
-		            sf2::vmember("b", b) );
-	}
-
 	float a;
 	bool b;
 };
+void load(sf2::Deserializer<sf2::format::Json_reader>& s, Data& data) {
+	s.read_virtual(
+	            sf2::vmember("a", data.a),
+	            sf2::vmember("b", data.b) );
+}
+void save(sf2::Serializer<sf2::format::Json_writer>& s, const Data& data) {
+	s.write_virtual(
+	            sf2::vmember("a", data.a),
+	            sf2::vmember("b", data.b) );
+}
 
 
 int main() {
