@@ -137,7 +137,7 @@ namespace sf2 {
 		template<class T>
 		std::enable_if_t<is_annotated_struct<T>::value>
 		  write(const T& inst) {
-			writer.begin_document();
+			writer.begin_obj();
 
 			get_struct_info<T>().for_each([&](auto n, auto mptr) {
 				write_member(n, inst.*mptr);
@@ -148,7 +148,7 @@ namespace sf2 {
 
 		template<typename... Members>
 		inline void write_virtual(Members&&... m) {
-			writer.begin_document();
+			writer.begin_obj();
 
 			auto i = {write_member_pair(m)...};
 			(void)i;
@@ -178,6 +178,7 @@ namespace sf2 {
 				write_value(inst);
 			}
 
+		public:
 			template<class T>
 			void write_value(const T* inst) {
 				if(inst)
@@ -298,7 +299,7 @@ namespace sf2 {
 		std::enable_if_t<is_annotated_struct<T>::value>
 		  read(T& inst) {
 
-			while(reader.in_document()) {
+			while(reader.in_obj()) {
 				reader.read(buffer);
 
 				auto match = false;
@@ -319,7 +320,7 @@ namespace sf2 {
 
 		template<typename... Members>
 		inline void read_virtual(Members&&... m) {
-			while(reader.in_document()) {
+			while(reader.in_obj()) {
 				reader.read(buffer);
 
 				bool match = false;
@@ -327,6 +328,19 @@ namespace sf2 {
 
 				auto i = {read_member_pair(match, key, m)...};
 				(void)i;
+
+				if(!match) {
+					on_error("Unexpected key "+buffer);
+				}
+			}
+		}
+
+		template<typename Func>
+		inline void read_lambda(Func func) {
+			while(reader.in_obj()) {
+				reader.read(buffer);
+
+				bool match = func(buffer);
 
 				if(!match) {
 					on_error("Unexpected key "+buffer);
@@ -422,7 +436,7 @@ namespace sf2 {
 					read_value(key);
 					read_value(val);
 
-					inst.emplace(key, val);
+					inst.emplace(std::move(key), std::move(val));
 				}
 			}
 
@@ -437,7 +451,7 @@ namespace sf2 {
 				while(reader.in_array()) {
 					read_value(v);
 
-					inst.emplace(v);
+					inst.emplace(std::move(v));
 				}
 			}
 
@@ -452,7 +466,7 @@ namespace sf2 {
 				while(reader.in_array()) {
 					read_value(v);
 
-					inst.emplace_back(v);
+					inst.emplace_back(std::move(v));
 				}
 			}
 

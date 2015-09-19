@@ -28,7 +28,6 @@ namespace format {
 		public:
 			Json_writer(std::ostream& stream);
 
-			void begin_document();
 			void begin_obj();
 			void begin_array();
 			void end_current();
@@ -111,12 +110,6 @@ namespace format {
 
 	Json_writer::Json_writer(std::ostream& stream) : _stream(stream) {
 		_state.reserve(16);
-	}
-
-	void Json_writer::begin_document() {
-		_stream<<"{";
-		_state.push_back(State::first_obj_key);
-		newline();
 	}
 
 	void Json_writer::end_current() {

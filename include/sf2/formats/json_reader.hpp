@@ -34,7 +34,6 @@ namespace format {
 			Json_reader(std::istream& stream, Error_handler ehandler=Error_handler{});
 
 			// returns true if the next key is ready to be read
-			bool in_document();
 			bool in_obj();
 			bool in_array();
 
@@ -233,31 +232,6 @@ namespace format {
 			val*=-1;
 
 		return val;
-	}
-
-
-	bool Json_reader::in_document() {
-		auto c = _next();
-
-		switch(c) {
-			case '{':
-				_state.push_back(State::obj_key);
-				return true;
-
-			case ',':
-				assert(!_state.empty() &&_state.back()==State::obj_value);
-				_state.back() = State::obj_key;
-				return true;
-
-			case '}':
-				assert(!_state.empty() &&_state.back()==State::obj_value);
-				_state.pop_back();
-				return false;
-
-			default:
-				_on_error(std::string("Unexpected character ")+c+" in object");
-				return false;
-		}
 	}
 
 	bool Json_reader::in_obj() {
