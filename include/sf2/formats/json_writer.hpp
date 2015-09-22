@@ -50,55 +50,13 @@ namespace format {
 			void write(int64_t);
 
 		private:
-			void newline() {
-				_stream.put('\n');
-				for(std::size_t i=0; i<_state.size(); ++i)
-					_stream<<"    ";
-			}
+			void newline();
 
-			void _pre_write() {
-				if(_state.empty())
-					return;
-
-				switch(_state.back()) {
-					case State::first_obj_key:
-						_state.back() = State::obj_key;
-						break;
-					case State::first_array:
-						_state.back() = State::array;
-						break;
-
-					case State::obj_value:
-						break;
-
-					case State::obj_key:
-					case State::array:
-						_stream<<",";
-						newline();
-						break;
-				}
-			}
-			void _post_write() {
-				if(_state.empty())
-					return;
-
-				if(_state.back()==State::obj_value) {
-					_state.back()=State::obj_key;
-
-				} else if(_state.back()==State::obj_key) {
-					_stream<<": ";
-					_state.back()=State::obj_value;
-				}
-			}
+			void _pre_write();
+			void _post_write();
 
 			template<class T>
-			void _write(const T& v) {
-				_pre_write();
-
-				_stream<<v;
-
-				_post_write();
-			}
+			void _write(const T& v);
 
 			enum class State {
 				first_obj_key, obj_key, obj_value, first_array, array
@@ -108,11 +66,63 @@ namespace format {
 			std::vector<State> _state;
 	};
 
-	Json_writer::Json_writer(std::ostream& stream) : _stream(stream) {
+
+
+	inline Json_writer::Json_writer(std::ostream& stream) : _stream(stream) {
 		_state.reserve(16);
 	}
 
-	void Json_writer::end_current() {
+	inline void Json_writer::newline() {
+		_stream.put('\n');
+		for(std::size_t i=0; i<_state.size(); ++i)
+			_stream<<"    ";
+	}
+
+	inline void Json_writer::_pre_write() {
+		if(_state.empty())
+			return;
+
+		switch(_state.back()) {
+			case State::first_obj_key:
+				_state.back() = State::obj_key;
+				break;
+			case State::first_array:
+				_state.back() = State::array;
+				break;
+
+			case State::obj_value:
+				break;
+
+			case State::obj_key:
+			case State::array:
+				_stream<<",";
+				newline();
+				break;
+		}
+	}
+	inline void Json_writer::_post_write() {
+		if(_state.empty())
+			return;
+
+		if(_state.back()==State::obj_value) {
+			_state.back()=State::obj_key;
+
+		} else if(_state.back()==State::obj_key) {
+			_stream<<": ";
+			_state.back()=State::obj_value;
+		}
+	}
+
+	template<class T>
+	void Json_writer::_write(const T& v) {
+		_pre_write();
+
+		_stream<<v;
+
+		_post_write();
+	}
+
+	inline void Json_writer::end_current() {
 		auto closed = _state.back();
 		_state.pop_back();
 		newline();
@@ -137,23 +147,23 @@ namespace format {
 			_stream<<std::endl;
 	}
 
-	void Json_writer::begin_obj() {
+	inline void Json_writer::begin_obj() {
 		_stream<<"{";
 		_state.push_back(State::first_obj_key);
 		newline();
 	}
 
-	void Json_writer::begin_array() {
+	inline void Json_writer::begin_array() {
 		_stream<<"[";
 		_state.push_back(State::first_array);
 		newline();
 	}
 
-	void Json_writer::write_nullptr() {
+	inline void Json_writer::write_nullptr() {
 		_write("null");
 	}
 
-	void Json_writer::write(const char* v) {
+	inline void Json_writer::write(const char* v) {
 		_pre_write();
 
 		_stream.put('"');
@@ -172,7 +182,7 @@ namespace format {
 
 		_post_write();
 	}
-	void Json_writer::write(const char* v, std::size_t len) {
+	inline void Json_writer::write(const char* v, std::size_t len) {
 		_pre_write();
 
 		_stream.put('"');
@@ -184,50 +194,51 @@ namespace format {
 		_post_write();
 	}
 
-	void Json_writer::write(const std::string& v) {
+	inline void Json_writer::write(const std::string& v) {
 		write(v.c_str());
 	}
 
-	void Json_writer::write(bool v) {
+	inline void Json_writer::write(bool v) {
 		_write(v ? "true" : "false");
 	}
 
-	void Json_writer::write(float v) {
+	inline void Json_writer::write(float v) {
 		_write(v);
 	}
 
-	void Json_writer::write(double v) {
+	inline void Json_writer::write(double v) {
 		_write(v);
 	}
 
-	void Json_writer::write(uint8_t v) {
+	inline void Json_writer::write(uint8_t v) {
 		_write(v);
 	}
 
-	void Json_writer::write(int8_t v) {
+	inline void Json_writer::write(int8_t v) {
 		_write(v);
 	}
 
-	void Json_writer::write(uint16_t v) {
+	inline void Json_writer::write(uint16_t v) {
 		_write(v);
 	}
 
-	void Json_writer::write(int16_t v) {
+	inline void Json_writer::write(int16_t v) {
 		_write(v);
 	}
 
-	void Json_writer::write(uint32_t v) {
-		_write(v);
-	}
-	void Json_writer::write(int32_t v) {
+	inline void Json_writer::write(uint32_t v) {
 		_write(v);
 	}
 
-	void Json_writer::write(uint64_t v) {
+	inline void Json_writer::write(int32_t v) {
 		_write(v);
 	}
 
-	void Json_writer::write(int64_t v) {
+	inline void Json_writer::write(uint64_t v) {
+		_write(v);
+	}
+
+	inline void Json_writer::write(int64_t v) {
 		_write(v);
 	}
 

@@ -90,18 +90,20 @@ namespace format {
 			uint32_t _saved_row = 1;
 	};
 
-	Json_reader::Json_reader(std::istream& stream, Error_handler ehandler)
+
+
+	inline Json_reader::Json_reader(std::istream& stream, Error_handler ehandler)
 	    : _stream(stream), _error_handler(ehandler) {
 		_state.reserve(16);
 	}
 
-	void Json_reader::_on_error(const std::string& e) {
+	inline void Json_reader::_on_error(const std::string& e) {
 		if(_error_handler)
 			_error_handler(e, _row, _column);
 		else
 			std::cerr<<"Error parsing JSON at "<<_row<<":"<<_column<<" : "<<e<<std::endl;
 	}
-	char Json_reader::_get() {
+	inline char Json_reader::_get() {
 		auto c = _stream.get();
 		_column++;
 		if(c=='\n') {
@@ -118,7 +120,7 @@ namespace format {
 		}
 		return c;
 	}
-	void Json_reader::_unget() {
+	inline void Json_reader::_unget() {
 		_stream.unget();
 		auto c = _stream.peek();
 		_column--;
@@ -127,18 +129,18 @@ namespace format {
 			_row--;
 		}
 	}
-	void Json_reader::_mark() {
+	inline void Json_reader::_mark() {
 		_marked_pos = _stream.tellg();
 		_saved_column = _column;
 		_saved_row = _row;
 	}
-	void Json_reader::_rewind() {
+	inline void Json_reader::_rewind() {
 		_stream.seekg(_marked_pos);
 		_column = _saved_column;
 		_row = _saved_row;
 	}
 
-	char Json_reader::_next(bool in_string) {
+	inline char Json_reader::_next(bool in_string) {
 		auto c = _get();
 		if(c=='/' && !in_string && _stream.peek()=='*') { // comment
 			_get();
@@ -155,7 +157,7 @@ namespace format {
 
 		return c;
 	}
-	void Json_reader::_post_read() {
+	inline void Json_reader::_post_read() {
 		if(_state.back()==State::obj_key) {
 			_state.back() = State::obj_value;
 			auto c = _next();
@@ -234,7 +236,7 @@ namespace format {
 		return val;
 	}
 
-	bool Json_reader::in_obj() {
+	inline bool Json_reader::in_obj() {
 		auto c = _next();
 
 		switch(c) {
@@ -258,7 +260,7 @@ namespace format {
 		}
 	}
 
-	bool Json_reader::in_array() {
+	inline bool Json_reader::in_array() {
 		auto c = _next();
 
 		switch(c) {
@@ -282,7 +284,7 @@ namespace format {
 		}
 	}
 
-	bool Json_reader::read_nullptr() { // look-ahead if false
+	inline bool Json_reader::read_nullptr() { // look-ahead if false
 		_mark();
 
 		if(_next()=='n' && _get()=='u' && _get()=='l' && _get()=='l') {
@@ -294,7 +296,7 @@ namespace format {
 		return false;
 	}
 
-	void Json_reader::read(std::string& val) {
+	inline void Json_reader::read(std::string& val) {
 		auto c = _next();
 
 		if(c!='\"')
@@ -315,7 +317,7 @@ namespace format {
 		_post_read();
 	}
 
-	void Json_reader::read(bool& val) {
+	inline void Json_reader::read(bool& val) {
 		char chars[] {
 		    _next(),
 		    _get(),
@@ -331,43 +333,43 @@ namespace format {
 			_on_error(std::string("Unknown boolean constant '")+chars+"'");
 	}
 
-	void Json_reader::read(float& val) {
+	inline void Json_reader::read(float& val) {
 		val = _read_float<float>();
 	}
 
-	void Json_reader::read(double& val) {
+	inline void Json_reader::read(double& val) {
 		val = _read_float<double>();
 	}
 
-	void Json_reader::read(uint8_t& val) {
+	inline void Json_reader::read(uint8_t& val) {
 		val = _read_int<uint8_t>();
 	}
 
-	void Json_reader::read(int8_t& val) {
+	inline void Json_reader::read(int8_t& val) {
 		val = _read_int<int8_t>();
 	}
 
-	void Json_reader::read(uint16_t& val) {
+	inline void Json_reader::read(uint16_t& val) {
 		val = _read_int<uint16_t>();
 	}
 
-	void Json_reader::read(int16_t& val) {
+	inline void Json_reader::read(int16_t& val) {
 		val = _read_int<int16_t>();
 	}
 
-	void Json_reader::read(uint32_t& val) {
+	inline void Json_reader::read(uint32_t& val) {
 		val = _read_int<uint32_t>();
 	}
 
-	void Json_reader::read(int32_t& val) {
+	inline void Json_reader::read(int32_t& val) {
 		val = _read_int<int32_t>();
 	}
 
-	void Json_reader::read(uint64_t& val) {
+	inline void Json_reader::read(uint64_t& val) {
 		val = _read_int<uint64_t>();
 	}
 
-	void Json_reader::read(int64_t& val) {
+	inline void Json_reader::read(int64_t& val) {
 		val = _read_int<int64_t>();
 	}
 
