@@ -180,7 +180,7 @@ namespace sf2 {
 
 		public:
 			template<class T>
-			std::enable_if_t<not details::has_save<Writer,T>::value>
+			std::enable_if_t<not details::has_save<Writer,T*>::value>
 			  write_value(const T* inst) {
 				if(inst)
 					write_value(*inst);
@@ -188,7 +188,7 @@ namespace sf2 {
 					writer.write_nullptr();
 			}
 			template<class T>
-			std::enable_if_t<not details::has_save<Writer,T>::value>
+			std::enable_if_t<not details::has_save<Writer,std::unique_ptr<T>>::value>
 			  write_value(const std::unique_ptr<T>& inst) {
 				if(inst)
 					write_value(*inst);
@@ -196,7 +196,7 @@ namespace sf2 {
 					writer.write_nullptr();
 			}
 			template<class T>
-			std::enable_if_t<not details::has_save<Writer,T>::value>
+			std::enable_if_t<not details::has_save<Writer,std::shared_ptr<T>>::value>
 			  write_value(const std::shared_ptr<T>& inst) {
 				if(inst)
 					write_value(*inst);
@@ -376,7 +376,7 @@ namespace sf2 {
 
 		public:
 			template<class T>
-			std::enable_if_t<not details::has_load<Reader,T>::value>
+			std::enable_if_t<not details::has_load<Reader,std::unique_ptr<T>>::value>
 			  read_value(std::unique_ptr<T>& inst) {
 				if(reader.read_nullptr())
 					inst = nullptr;
@@ -387,7 +387,7 @@ namespace sf2 {
 				}
 			}
 			template<class T>
-			std::enable_if_t<not details::has_load<Reader,T>::value>
+			std::enable_if_t<not details::has_load<Reader,std::shared_ptr<T>>::value>
 			  read_value(std::shared_ptr<T>& inst) {
 				if(reader.read_nullptr())
 					inst = nullptr;
