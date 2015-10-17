@@ -140,7 +140,7 @@ namespace sf2 {
 			writer.begin_obj();
 
 			get_struct_info<T>().for_each([&](auto n, auto mptr) {
-				write_member(n, inst.*mptr);
+				this->write_member(n, inst.*mptr);
 			});
 
 			writer.end_current();
@@ -212,7 +212,7 @@ namespace sf2 {
 				writer.begin_obj();
 
 				get_struct_info<T>().for_each([&](auto n, auto mptr) {
-					write_member(n, inst.*mptr);
+					this->write_member(n, inst.*mptr);
 				});
 
 				writer.end_current();
@@ -312,7 +312,7 @@ namespace sf2 {
 
 				get_struct_info<T>().for_each([&](String_literal n, auto mptr) {
 					if(!match && n==key) {
-						read_value(inst.*mptr);
+						this->read_value(inst.*mptr);
 						match = true;
 					}
 				});
@@ -411,7 +411,7 @@ namespace sf2 {
 
 					get_struct_info<T>().for_each([&](auto n, auto mptr) {
 						if(!match && n==key) {
-							read_value(inst.*mptr);
+							this->read_value(inst.*mptr);
 							match = true;
 						}
 					});
