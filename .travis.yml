@@ -14,7 +14,7 @@ addons:
     packages:
       - gcc-5
       - g++-5
-      - clang-3.8
+      - clang
 
 before_script:  
   - mkdir build
