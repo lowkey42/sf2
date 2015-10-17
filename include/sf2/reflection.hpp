@@ -317,5 +317,5 @@ namespace sf2 {
 	return data;\
 }
 
-#define sf2_accesor(TYPE) auto& sf2_struct_info_factory(TYPE*);
+#define sf2_accesor(TYPE) auto& sf2_struct_info_factory(TYPE*)
 

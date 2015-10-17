@@ -1,0 +1,12 @@
+language: cpp
+
+compiler:  
+    - gcc
+    - clang
+
+before_script:  
+    - mkdir build
+    - cd build
+    - cmake -DSF2_BUILD_TESTS=ON ..
+
+script: make 

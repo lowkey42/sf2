@@ -21,7 +21,7 @@ if(SF2_BUILD_TESTS)
 
 	FILE(GLOB_RECURSE INC  "include/*.h*")
 
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wextra -Wall")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wextra -Wall -pedantic -Werror")
 
 	add_executable(test_simple
 		"tests/test_simple.cpp"
@@ -32,6 +32,6 @@ if(SF2_BUILD_TESTS)
 		${INC}
 	)
 
-	add_test(NAME "SF2 simple usage test"   COMMAND test_simple)
-	add_test(NAME "SF2 advanced usage test" COMMAND test_advanced)
+	add_test(NAME simple_usage   COMMAND test_simple)
+	add_test(NAME advanced_usage COMMAND test_advanced)
 endif()
