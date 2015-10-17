@@ -14,11 +14,11 @@ addons:
     packages:
       - gcc-5
       - g++-5
-      - clang
+      - clang-3.7
 
 before_script:  
   - mkdir build
   - cd build
   - cmake -DSF2_BUILD_TESTS=ON ..
 
-script: make 
+script: make all test
