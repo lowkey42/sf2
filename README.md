@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/lowkey42/sf2.svg?branch=master)](https://travis-ci.org/lowkey42/sf2)
+
 SF2 - Simple and Fast Struct Formater
 ===
 
