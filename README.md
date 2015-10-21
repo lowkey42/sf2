@@ -34,7 +34,7 @@ A C++14 compliant compiler (constexpr, variadic templates, SFINAE, ...).
 Simple Example:
 ``` cpp
 #include <sf2/sf2.hpp>
-#inclide <sstream>
+#include <sstream>
 
 enum class Color {
 	red, green, blue
