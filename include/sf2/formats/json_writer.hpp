@@ -134,26 +134,32 @@ namespace format {
 
 			case State::first_obj_key:
 			case State::obj_key:
-				_write("}");
+				_stream<<"}";
 				break;
 
 			case State::first_array:
 			case State::array:
-				_write("]");
+				_stream<<"]";
 				break;
 		}
+
+		_post_write();
 
 		if(_state.empty())
 			_stream<<std::endl;
 	}
 
 	inline void Json_writer::begin_obj() {
+		_pre_write();
+
 		_stream<<"{";
 		_state.push_back(State::first_obj_key);
 		newline();
 	}
 
 	inline void Json_writer::begin_array() {
+		_pre_write();
+
 		_stream<<"[";
 		_state.push_back(State::first_array);
 		newline();

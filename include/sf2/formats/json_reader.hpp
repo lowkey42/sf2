@@ -100,8 +100,10 @@ namespace format {
 	inline void Json_reader::_on_error(const std::string& e) {
 		if(_error_handler)
 			_error_handler(e, _row, _column);
-		else
+		else {
 			std::cerr<<"Error parsing JSON at "<<_row<<":"<<_column<<" : "<<e<<std::endl;
+			abort();
+		}
 	}
 	inline char Json_reader::_get() {
 		auto c = _stream.get();
@@ -241,6 +243,13 @@ namespace format {
 
 		switch(c) {
 			case '{':
+				c = _next();
+				if(c=='}') {
+					_post_read();
+					return false;
+				} else
+					_unget();
+
 				_state.push_back(State::obj_key);
 				return true;
 
@@ -252,6 +261,8 @@ namespace format {
 			case '}':
 				assert(!_state.empty() &&_state.back()==State::obj_value);
 				_state.pop_back();
+				if(!_state.empty())
+					_post_read();
 				return false;
 
 			default:
@@ -265,6 +276,13 @@ namespace format {
 
 		switch(c) {
 			case '[':
+				c = _next();
+				if(c==']') {
+					_post_read();
+					return false;
+				} else
+					_unget();
+
 				_state.push_back(State::array);
 				return true;
 
@@ -276,6 +294,7 @@ namespace format {
 			case ']':
 				assert(!_state.empty() &&_state.back()==State::array);
 				_state.pop_back();
+				_post_read();
 				return false;
 
 			default:
@@ -331,46 +350,68 @@ namespace format {
 			val = false;
 		else
 			_on_error(std::string("Unknown boolean constant '")+chars+"'");
+
+		_post_read();
 	}
 
 	inline void Json_reader::read(float& val) {
 		val = _read_float<float>();
+
+		_post_read();
 	}
 
 	inline void Json_reader::read(double& val) {
 		val = _read_float<double>();
+
+		_post_read();
 	}
 
 	inline void Json_reader::read(uint8_t& val) {
 		val = _read_int<uint8_t>();
+
+		_post_read();
 	}
 
 	inline void Json_reader::read(int8_t& val) {
 		val = _read_int<int8_t>();
+
+		_post_read();
 	}
 
 	inline void Json_reader::read(uint16_t& val) {
 		val = _read_int<uint16_t>();
+
+		_post_read();
 	}
 
 	inline void Json_reader::read(int16_t& val) {
 		val = _read_int<int16_t>();
+
+		_post_read();
 	}
 
 	inline void Json_reader::read(uint32_t& val) {
 		val = _read_int<uint32_t>();
+
+		_post_read();
 	}
 
 	inline void Json_reader::read(int32_t& val) {
 		val = _read_int<int32_t>();
+
+		_post_read();
 	}
 
 	inline void Json_reader::read(uint64_t& val) {
 		val = _read_int<uint64_t>();
+
+		_post_read();
 	}
 
 	inline void Json_reader::read(int64_t& val) {
 		val = _read_int<int64_t>();
+
+		_post_read();
 	}
 
 }

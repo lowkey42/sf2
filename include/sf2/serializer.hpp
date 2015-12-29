@@ -125,7 +125,7 @@ namespace sf2 {
 	}
 
 	template<typename T>
-	auto vmember(String_literal name, T& v) {
+	auto vmember(String_literal name, T&& v) {
 		return std::pair<String_literal, T&>(name, v);
 	}
 
@@ -150,7 +150,7 @@ namespace sf2 {
 		inline void write_virtual(Members&&... m) {
 			writer.begin_obj();
 
-			auto i = {write_member_pair(m)...};
+			auto i = {0, write_member_pair(m)...};
 			(void)i;
 
 			writer.end_current();
