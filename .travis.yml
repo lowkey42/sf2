@@ -1,4 +1,4 @@
-sudo: false
+sudo: required
 language: cpp
 compiler:
   - gcc
@@ -13,6 +13,5 @@ services:
   
 before_install:
   - docker pull lowkey42/build-env:latest
-  - docker run -e "CXX=$CXX" -e "CC=$CC -itd --name build lowkey42/build-env
-  - docker exec build git clone https://github.com/qbradq/docker-build-example.git /repo
+  - docker run -e "CXX=$CXX" -e "CC=$CC -v $TRAVIS_BUILD_DIR:/repo -itd --name build lowkey42/build-env
 
