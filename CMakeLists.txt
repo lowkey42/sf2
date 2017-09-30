@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
 project(sf2 VERSION 1.0 LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 add_library(sf2 INTERFACE)
 target_include_directories(sf2 INTERFACE
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -31,7 +35,7 @@ if(SF2_BUILD_TESTS)
 	endif()
 
 
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wextra -Wall -pedantic")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra -Wall -pedantic")
 
 	add_executable(sf2_test_simple "tests/test_simple.cpp")
 	target_link_libraries(sf2_test_simple PRIVATE sf2)
