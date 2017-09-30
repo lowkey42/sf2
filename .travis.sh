@@ -13,14 +13,6 @@ if [ $ANALYZE = "true" ]; then
           -enable-checker security.insecureAPI.UncheckedReturn \
           --status-bugs -v \
           cmake --build /build
-    else
-        docker exec build cppcheck --template "{file}({line}): {severity} ({id}): {message}" \
-            --enable=style --force --std=c++17 -j 8 \
-            -I headers hc common headers unix win32 /repo 2> cppcheck.txt
-        if [ -s cppcheck.txt ]; then
-            cat cppcheck.txt
-            exit 1
-        fi
     fi
 else
   docker exec build cmake -DSF2_BUILD_TESTS=ON -H/repo -B/build
