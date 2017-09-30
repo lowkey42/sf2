@@ -4,31 +4,15 @@ compiler:
   - gcc
   - clang
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - gcc-7
-      - g++-7
+env:
+  - ANALYZE=false
+  - ANALYZE=true
 
-before_install:  
-  - sudo apt-add-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main"
-  - sudo apt-get update -qq
+services:
+  - docker
+  
+before_install:
+  - docker pull lowkey42/build-env:latest
+  - docker run -e "CXX=$CXX" -e "CC=$CC -itd --name build lowkey42/build-env
+  - docker exec build git clone https://github.com/qbradq/docker-build-example.git /repo
 
-install:
-  - sudo apt-get install --allow-unauthenticated -qq clang++-5.0
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-7" CC="gcc-7"; fi
-  - if [ "$CXX" = "clang++" ]; then export CXX="clang++-5.0"; fi
-  - |
-    CMAKE_URL="https://cmake.org/files/v3.9/cmake-3.9.3-Linux-x86_64.tar.gz"
-    mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
-    export PATH=${DEPS_DIR}/cmake/bin:${PATH}
-  - cmake --version
-
-before_script:  
-  - mkdir build
-  - cd build
-  - cmake -DSF2_BUILD_TESTS=ON ..
-
-script: make all test
