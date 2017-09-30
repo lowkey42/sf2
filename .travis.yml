@@ -16,4 +16,4 @@ before_install:
   - docker run -e "CXX=$CXX" -e "CC=$CC" -v $TRAVIS_BUILD_DIR:/repo -itd --name build lowkey42/build-env
 
 script:
-  - source ./travis.sh
+  - source $TRAVIS_BUILD_DIR/travis.sh
