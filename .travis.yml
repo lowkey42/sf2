@@ -9,14 +9,17 @@ dist: trusty
 addons:
   apt:
     sources:
-      - llvm-toolchain-trusty-4.0
       - ubuntu-toolchain-r-test
     packages:
-      - clang-4
       - gcc-6
       - g++-6
-  
+
+before_install:  
+  - sudo apt-add-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main"
+  - sudo apt-get update -qq
+
 install:
+  - sudo apt-get install --allow-unauthenticated -qq clang++-4.0
   - if [ "$CXX" = "g++" ]; then export CXX="g++-6" CC="gcc-6"; fi
   - if [ "$CXX" = "clang++" ]; then export CXX="clang++-4"; fi
 
