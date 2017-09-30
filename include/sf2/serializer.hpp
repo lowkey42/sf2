@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <iostream>
 
@@ -61,6 +62,26 @@ namespace sf2 {
 			public:
 				enum { value = sizeof(test<T>(0)) == sizeof(char) };
 		};
+		template<class T>
+		struct has_post_load {
+			private:
+				typedef char one;
+				typedef long two;
+
+				template <typename C> static one test(decltype(post_load(std::declval<C&>()))*);
+				template <typename C> static two test(...);
+
+
+			public:
+				enum { value = sizeof(test<T>(0)) == sizeof(char) };
+		};
+		template<class T>
+		void call_post_load(T&, typename std::enable_if_t<!has_post_load<T>::value>* = nullptr) {
+		}
+		template<class T>
+		void call_post_load(T& inst, typename std::enable_if_t<has_post_load<T>::value>* = nullptr) {
+			post_load(inst);
+		}
 
 		template<class T>
 		struct is_range {
@@ -135,7 +156,7 @@ namespace sf2 {
 		Serializer(Writer&& w) : writer(std::move(w)) {}
 
 		template<class T>
-		std::enable_if_t<is_annotated_struct<T>::value>
+		std::enable_if_t<is_annotated_struct<T>::value && not details::has_save<Writer,T>::value>
 		  write(const T& inst) {
 			writer.begin_obj();
 
@@ -145,6 +166,11 @@ namespace sf2 {
 
 			writer.end_current();
 		}
+		template<class T>
+		std::enable_if_t<details::has_save<Writer,T>::value>
+		  write(const T& inst) {
+			save(*this, inst);
+		}
 
 		template<typename... Members>
 		inline void write_virtual(Members&&... m) {
@@ -152,6 +178,15 @@ namespace sf2 {
 
 			auto i = {0, write_member_pair(m)...};
 			(void)i;
+
+			writer.end_current();
+		}
+
+		template<typename Func>
+		inline void write_lambda(Func func) {
+			writer.begin_obj();
+
+			func();
 
 			writer.end_current();
 		}
@@ -267,9 +302,7 @@ namespace sf2 {
 
 			// other
 			template<class T>
-			std::enable_if_t<not is_annotated<T>::value
-			                && not details::is_range<T>::value
-			                && not details::has_save<Writer,T>::value>
+			std::enable_if_t<std::is_integral<T>::value || std::is_floating_point<T>::value>
 			  write_value(const T& inst) {
 				writer.write(inst);
 			}
@@ -279,6 +312,9 @@ namespace sf2 {
 			}
 			void write_value(const char* inst) {
 				writer.write(inst);
+			}
+			void write_value(String_literal str) {
+				writer.write(str.data, str.len);
 			}
 	};
 
@@ -301,7 +337,7 @@ namespace sf2 {
 		}
 
 		template<class T>
-		std::enable_if_t<is_annotated_struct<T>::value>
+		std::enable_if_t<is_annotated_struct<T>::value && not details::has_load<Reader,T>::value>
 		  read(T& inst) {
 
 			while(reader.in_obj()) {
@@ -321,6 +357,17 @@ namespace sf2 {
 					on_error("Unexpected key "+buffer);
 				}
 			}
+
+			details::call_post_load(inst);
+		}
+
+		// manual load-function
+		template<class T>
+		std::enable_if_t<details::has_load<Reader,T>::value>
+		  read(T& inst) {
+			load(*this, inst);
+
+			details::call_post_load(inst);
 		}
 
 		template<typename... Members>
@@ -420,6 +467,8 @@ namespace sf2 {
 						on_error("Unexpected key "+buffer);
 					}
 				}
+
+				details::call_post_load(inst);
 			}
 
 			// annotated enum
@@ -428,6 +477,8 @@ namespace sf2 {
 			  read_value(T& inst) {
 				reader.read(buffer);
 				inst = get_enum_info<T>().value_of(buffer);
+
+				details::call_post_load(inst);
 			}
 
 			// map
@@ -438,9 +489,9 @@ namespace sf2 {
 			  read_value(T& inst) {
 				inst.clear();
 
-				typename T::key_type key;
-				typename T::mapped_type val;
 				while(reader.in_obj()) {
+					typename T::key_type key;
+					typename T::mapped_type val;
 
 					read_value(key);
 					read_value(val);
@@ -457,8 +508,8 @@ namespace sf2 {
 			  read_value(T& inst) {
 				inst.clear();
 
-				typename T::value_type v;
 				while(reader.in_array()) {
+					typename T::value_type v;
 					read_value(v);
 
 					inst.emplace(std::move(v));
@@ -473,8 +524,8 @@ namespace sf2 {
 			  read_value(T& inst) {
 				inst.clear();
 
-				typename T::value_type v;
 				while(reader.in_array()) {
+					typename T::value_type v;
 					read_value(v);
 
 					inst.emplace_back(std::move(v));
@@ -486,6 +537,8 @@ namespace sf2 {
 			std::enable_if_t<details::has_load<Reader,T>::value>
 			  read_value(T& inst) {
 				load(*this, inst);
+
+				details::call_post_load(inst);
 			}
 
 			// other
@@ -500,6 +553,10 @@ namespace sf2 {
 			void read_value(std::string& inst) {
 				reader.read(inst);
 			}
+
+			void skip_obj() {
+				reader.skip_obj();
+			}
 	};
 
 	template<typename Reader, typename T>
@@ -511,5 +568,8 @@ namespace sf2 {
 	inline void deserialize_virtual(Reader&& r, Members&&... m) {
 		Deserializer<Reader>{std::move(r)}.read_virtual(std::forward<Members>(m)...);
 	}
+
+	template<class T, class Reader>
+	using is_loadable = std::disjunction<is_annotated<T>, details::has_load<Reader,T>>;
 
 }
