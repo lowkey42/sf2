@@ -21,7 +21,7 @@ before_install:
 install:
   - sudo apt-get install --allow-unauthenticated -qq clang++-4.0
   - if [ "$CXX" = "g++" ]; then export CXX="g++-6" CC="gcc-6"; fi
-  - if [ "$CXX" = "clang++" ]; then export CXX="clang++-4"; fi
+  - if [ "$CXX" = "clang++" ]; then export CXX="clang++-4.0"; fi
 
 before_script:  
   - mkdir build
