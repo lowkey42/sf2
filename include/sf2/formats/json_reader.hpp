@@ -218,7 +218,7 @@ namespace format {
 		_unget();
 
 		if constexpr(std::numeric_limits<T>::is_signed) {
-			if( negativ && val<=static_cast<std::uint64_t>(-std::numeric_limits<T>::min()))
+			if(negativ)
 				return static_cast<T>( -static_cast<T>(val) );
 			else if(val<=std::numeric_limits<T>::max())
 				return static_cast<T>(val);
