@@ -40,6 +40,12 @@ namespace sf2 {
 	}
 
 	template<typename T>
+	inline auto deserialize_json(std::istream& stream) -> T {
+		auto v = T();
+		JsonDeserializer{format::Json_reader{stream}}.read(v);
+		return v;
+	}
+	template<typename T>
 	inline void deserialize_json(std::istream& stream, T& v) {
 		JsonDeserializer{format::Json_reader{stream}}.read(v);
 	}
