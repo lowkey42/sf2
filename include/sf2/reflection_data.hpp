@@ -51,6 +51,11 @@ namespace sf2 {
 		  : data(str.data()), len(str.size()), hash(details::calc_hash(data, len))
 		{
 		}
+		String_literal(const std::string_view& str)
+		  : data(str.data()), len(str.size()), hash(details::calc_hash(data, len))
+		{
+		}
+
 
 		auto str() const -> std::string { return std::string(data, len); }
 
