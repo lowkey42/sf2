@@ -156,7 +156,7 @@ namespace sf2 {
 		Serializer(Writer&& w) : writer(std::move(w)) {}
 
 		template<class T>
-		std::enable_if_t<is_annotated_struct<T>::value && not details::has_save<Writer,T>::value>
+		std::enable_if_t<is_annotated_struct<T>::value && !details::has_save<Writer,T>::value>
 		  write(const T& inst) {
 			writer.begin_obj();
 
@@ -215,7 +215,7 @@ namespace sf2 {
 
 		public:
 			template<class T>
-			std::enable_if_t<not details::has_save<Writer,T*>::value>
+			std::enable_if_t<!details::has_save<Writer,T*>::value>
 			  write_value(const T* inst) {
 				if(inst)
 					write_value(*inst);
@@ -223,7 +223,7 @@ namespace sf2 {
 					writer.write_nullptr();
 			}
 			template<class T>
-			std::enable_if_t<not details::has_save<Writer,std::unique_ptr<T>>::value>
+			std::enable_if_t<!details::has_save<Writer,std::unique_ptr<T>>::value>
 			  write_value(const std::unique_ptr<T>& inst) {
 				if(inst)
 					write_value(*inst);
@@ -231,7 +231,7 @@ namespace sf2 {
 					writer.write_nullptr();
 			}
 			template<class T>
-			std::enable_if_t<not details::has_save<Writer,std::shared_ptr<T>>::value>
+			std::enable_if_t<!details::has_save<Writer,std::shared_ptr<T>>::value>
 			  write_value(const std::shared_ptr<T>& inst) {
 				if(inst)
 					write_value(*inst);
@@ -242,7 +242,7 @@ namespace sf2 {
 
 			// annotated struct
 			template<class T>
-			std::enable_if_t<is_annotated_struct<T>::value && not details::has_save<Writer,T>::value>
+			std::enable_if_t<is_annotated_struct<T>::value && !details::has_save<Writer,T>::value>
 			  write_value(const T& inst) {
 				writer.begin_obj();
 
@@ -255,7 +255,7 @@ namespace sf2 {
 
 			// annotated enum
 			template<class T>
-			std::enable_if_t<is_annotated_enum<T>::value && not details::has_save<Writer,T>::value>
+			std::enable_if_t<is_annotated_enum<T>::value && !details::has_save<Writer,T>::value>
 			  write_value(const T& inst) {
 				auto name = get_enum_info<T>().name_of(inst);
 				writer.write(name.data, name.len);
@@ -263,8 +263,8 @@ namespace sf2 {
 
 			// map
 			template<class T>
-			std::enable_if_t<not is_annotated<T>::value
-			                 && not details::has_save<Writer,T>::value
+			std::enable_if_t<!is_annotated<T>::value
+			                 && !details::has_save<Writer,T>::value
 			                 && details::is_map<T>::value>
 			  write_value(const T& inst) {
 
@@ -280,8 +280,8 @@ namespace sf2 {
 
 			// other collection
 			template<class T>
-			std::enable_if_t<not is_annotated<T>::value
-			                 && not details::has_save<Writer,T>::value
+			std::enable_if_t<!is_annotated<T>::value
+			                 && !details::has_save<Writer,T>::value
 			                 && (details::is_list<T>::value || details::is_set<T>::value)>
 			  write_value(const T& inst) {
 
@@ -337,7 +337,7 @@ namespace sf2 {
 		}
 
 		template<class T>
-		std::enable_if_t<is_annotated_struct<T>::value && not details::has_load<Reader,T>::value>
+		std::enable_if_t<is_annotated_struct<T>::value && !details::has_load<Reader,T>::value>
 		  read(T& inst) {
 
 			while(reader.in_obj()) {
@@ -423,7 +423,7 @@ namespace sf2 {
 
 		public:
 			template<class T>
-			std::enable_if_t<not details::has_load<Reader,std::unique_ptr<T>>::value>
+			std::enable_if_t<!details::has_load<Reader,std::unique_ptr<T>>::value>
 			  read_value(std::unique_ptr<T>& inst) {
 				if(reader.read_nullptr())
 					inst = nullptr;
@@ -434,7 +434,7 @@ namespace sf2 {
 				}
 			}
 			template<class T>
-			std::enable_if_t<not details::has_load<Reader,std::shared_ptr<T>>::value>
+			std::enable_if_t<!details::has_load<Reader,std::shared_ptr<T>>::value>
 			  read_value(std::shared_ptr<T>& inst) {
 				if(reader.read_nullptr())
 					inst = nullptr;
@@ -448,7 +448,7 @@ namespace sf2 {
 
 			// annotated struct
 			template<class T>
-			std::enable_if_t<is_annotated_struct<T>::value && not details::has_load<Reader,T>::value>
+			std::enable_if_t<is_annotated_struct<T>::value && !details::has_load<Reader,T>::value>
 			  read_value(T& inst) {
 				while(reader.in_obj()) {
 					reader.read(buffer);
@@ -473,7 +473,7 @@ namespace sf2 {
 
 			// annotated enum
 			template<class T>
-			std::enable_if_t<is_annotated_enum<T>::value && not details::has_load<Reader,T>::value>
+			std::enable_if_t<is_annotated_enum<T>::value && !details::has_load<Reader,T>::value>
 			  read_value(T& inst) {
 				reader.read(buffer);
 				inst = get_enum_info<T>().value_of(buffer);
@@ -483,8 +483,8 @@ namespace sf2 {
 
 			// map
 			template<class T>
-			std::enable_if_t<not is_annotated<T>::value
-			                 && not details::has_load<Reader,T>::value
+			std::enable_if_t<!is_annotated<T>::value
+			                 && !details::has_load<Reader,T>::value
 			                 && details::is_map<T>::value>
 			  read_value(T& inst) {
 				inst.clear();
@@ -502,8 +502,8 @@ namespace sf2 {
 
 			//set
 			template<class T>
-			std::enable_if_t<not is_annotated<T>::value
-			                 && not details::has_load<Reader,T>::value
+			std::enable_if_t<!is_annotated<T>::value
+			                 && !details::has_load<Reader,T>::value
 			                 && details::is_set<T>::value>
 			  read_value(T& inst) {
 				inst.clear();
@@ -518,8 +518,8 @@ namespace sf2 {
 
 			// other collection
 			template<class T>
-			std::enable_if_t<not is_annotated<T>::value
-			                 && not details::has_load<Reader,T>::value
+			std::enable_if_t<!is_annotated<T>::value
+			                 && !details::has_load<Reader,T>::value
 			                 && details::is_list<T>::value>
 			  read_value(T& inst) {
 				inst.clear();
@@ -543,9 +543,9 @@ namespace sf2 {
 
 			// other
 			template<class T>
-			std::enable_if_t<not is_annotated<T>::value
-			                 && not details::is_range<T>::value
-			                 && not details::has_load<Reader,T>::value>
+			std::enable_if_t<!is_annotated<T>::value
+			                 && !details::is_range<T>::value
+			                 && !details::has_load<Reader,T>::value>
 			  read_value(T& inst) {
 				reader.read(inst);
 			}
