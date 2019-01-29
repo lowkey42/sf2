@@ -295,24 +295,31 @@ namespace sf2 {}
 	#define SF2_APPLY_125(m, x, ...) m(x), SF2_APPLY_124(m,__VA_ARGS__)
 #endif
 
+#ifdef _MSC_VER
+	#define SF2_PRE_DEF __pragma(warning(push)) __pragma(warning(disable:4307))
+	#define SF2_POST_DEF __pragma(warning(pop))
+#else
+	#define SF2_PRE_DEF 
+	#define SF2_POST_DEF
+#endif
 
 #define SF2_EXTRACT_VALUE(n) ::std::make_pair(sf2_current_type::n, ::sf2::String_literal{#n})
 
-#define sf2_enumDef(TYPE, ...) inline auto& sf2_enum_info_factory(TYPE*) {\
+#define sf2_enumDef(TYPE, ...) SF2_PRE_DEF inline auto& sf2_enum_info_factory(TYPE*) {\
 	using sf2_current_type = TYPE;\
 	static auto data = ::sf2::Enum_info<TYPE>{\
 			::sf2::String_literal{#TYPE}, \
 			{SF2_APPLY(SF2_EXTRACT_VALUE,__VA_ARGS__)}\
 	};\
 	return data;\
-} auto& sf2_enum_info_factory(TYPE*)
+} auto& sf2_enum_info_factory(TYPE*) SF2_POST_DEF
 
 #define sf2_enum(NAME, ...) enum NAME {__VA_ARGS__}; sf2_enumDef(NAME, __VA_ARGS__)
 
 #define SF2_EXTRACT_TYPE(n) decltype(sf2_current_type::n)
 #define SF2_EXTRACT_MEMBER(n) ::std::make_pair(&sf2_current_type::n, ::sf2::String_literal{#n})
 
-#define sf2_structDef(TYPE, ...) inline auto& sf2_struct_info_factory(TYPE*) {\
+#define sf2_structDef(TYPE, ...) SF2_PRE_DEF inline auto& sf2_struct_info_factory(TYPE*) {\
 	using sf2_current_type = TYPE;\
 	static constexpr auto data = ::sf2::Struct_info<TYPE,\
 		SF2_APPLY(SF2_EXTRACT_TYPE,__VA_ARGS__)>{\
@@ -320,7 +327,7 @@ namespace sf2 {}
 			SF2_APPLY(SF2_EXTRACT_MEMBER,__VA_ARGS__)\
 	};\
 	return data;\
-} auto& sf2_struct_info_factory(TYPE*)
+} auto& sf2_struct_info_factory(TYPE*) SF2_POST_DEF
 
 #define sf2_accesor(TYPE) auto& sf2_struct_info_factory(TYPE*)
 

@@ -27,6 +27,10 @@
 namespace sf2 {
 
 	namespace details {
+#ifdef _MSC_VER
+	#pragma warning( push )
+	#pragma warning( disable : 4307)
+#endif
 		constexpr auto calc_hash(const char* data, std::size_t len) noexcept -> std::size_t
 		{
 			std::size_t h = 0;
@@ -35,6 +39,9 @@ namespace sf2 {
 
 			return h;
 		}
+#ifdef _MSC_VER
+	#pragma warning( pop )
+#endif
 	} // namespace details
 
 	struct String_literal {
