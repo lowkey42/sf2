@@ -2,14 +2,24 @@ cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
 project(sf2 VERSION 1.0 LANGUAGES CXX)
 
-add_library(sf2 INTERFACE)
-target_include_directories(sf2 INTERFACE
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp "#include <sf2/sf2.hpp>
+")
+add_library(sf2 STATIC
+	${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/include/sf2/formats/json_reader.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/include/sf2/formats/json_writer.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/include/sf2/reflection.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/include/sf2/reflection_data.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/include/sf2/serializer.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/include/sf2/sf2.hpp)
+
+target_include_directories(sf2 PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:include>)
 	
-target_compile_features(sf2 INTERFACE cxx_std_17)
+target_compile_features(sf2 PUBLIC cxx_std_17)
 
-install(TARGETS sf2 EXPORT sf2_targets INCLUDES DESTINATION include)
+install(TARGETS sf2 EXPORT sf2_targets ARCHIVE DESTINATION lib INCLUDES DESTINATION include)
 install(
     DIRECTORY ${CMAKE_SOURCE_DIR}/include/
     DESTINATION include

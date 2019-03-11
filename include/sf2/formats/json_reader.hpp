@@ -162,11 +162,24 @@ namespace format {
 		}
 
 		auto c = _get();
+
+		if(!in_string) {
+			while(!_error && !std::isgraph(c)) {
+				c = _get();
+			}
+		}
+
 		if(c=='/' && !in_string && _stream.peek()=='*') { // comment
 			_get();
 
-			while(!_error && c=='*' && (c=_get())=='/') {
+			while(!_error) {
+				auto nc = _get();
+				if(c=='*' && nc=='/')
+					break;
+				else
+					c = nc;
 			}
+			c=_get();
 		}
 
 		if(!in_string) {
