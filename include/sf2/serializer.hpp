@@ -19,6 +19,7 @@
 #include <functional>
 #include <memory>
 #include <iostream>
+#include <variant>
 
 #include "reflection_data.hpp"
 
@@ -298,6 +299,15 @@ namespace sf2 {
 			std::enable_if_t<details::has_save<Writer,T>::value>
 			  write_value(const T& inst) {
 				save(*this, inst);
+			}
+
+			// variants
+			template<class... Ts>
+			void write_value(const std::variant<Ts...>& inst) {
+				std::visit(inst, [&](const auto& value) {
+					write_virtual(sf2::vmember("__type", typeid(decltype(value)).name()),
+					              sf2::vmember("__value", value));
+				});
 			}
 
 			// other
