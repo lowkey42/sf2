@@ -19,6 +19,7 @@
 #include <functional>
 #include <memory>
 #include <iostream>
+#include <optional>
 #include <variant>
 
 #include "reflection_data.hpp"
