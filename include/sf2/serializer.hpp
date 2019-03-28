@@ -310,6 +310,15 @@ namespace sf2 {
 				});
 			}
 
+			// optional
+			template<class T>
+			void write_value(const std::optional<T>& inst) {
+				if(inst.has_value())
+					write_value(inst.value());
+				else
+					writer.write_nullptr();
+			}
+
 			// other
 			template<class T>
 			std::enable_if_t<std::is_integral<T>::value || std::is_floating_point<T>::value>
