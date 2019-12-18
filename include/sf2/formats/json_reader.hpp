@@ -58,6 +58,11 @@ namespace format {
 
 			auto row()const noexcept {return _row;}
 			auto column()const noexcept {return _column;}
+			char peek() {
+				auto c = _next();
+				_unget();
+				return c;
+			}
 
 		private:
 			char _get();

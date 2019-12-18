@@ -351,6 +351,8 @@ namespace sf2 {
 
 	template<typename Reader>
 	struct Deserializer {
+		Reader reader;
+			
 		Deserializer(Reader&& r, Error_handler error_handler=Error_handler())
 		    : reader(std::move(r)), error_handler(error_handler) {
 			buffer.reserve(64);
@@ -421,7 +423,6 @@ namespace sf2 {
 		}
 
 		private:
-			Reader reader;
 			std::string buffer;
 			Error_handler error_handler;
 
